@@ -6,177 +6,150 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ink: #1a1a2e;
-  --paper: #faf8f4;
-  --accent: #c0392b;
-  --accent2: #2980b9;
-  --green: #27ae60;
-  --plan-bg: #eef6ff;
-  --notes-bg: #f0faf2;
-  --toolbar-bg: #1a1a2e;
-  --border: #ddd8d0;
+  --ink: #1a1a2e; --paper: #faf8f4; --accent: #c0392b; --accent2: #2980b9;
+  --green: #27ae60; --plan-bg: #eef6ff; --notes-bg: #f0faf2;
+  --toolbar-bg: #1a1a2e; --border: #ddd8d0;
   --shadow: 0 2px 20px rgba(0,0,0,0.09);
-  --font-head: 'DM Serif Display', serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-head: 'DM Serif Display', serif; --font-body: 'DM Sans', sans-serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: var(--font-body); background: var(--paper); color: var(--ink); overflow: hidden; height: 100vh; width: 100vw; }
-
 .screen { position: absolute; inset: 0; overflow-y: auto; }
 .hidden { display: none !important; }
 
-.wizard-wrap {
-  min-height: 100vh;
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: flex-start; padding: 40px 16px 60px;
-}
-.card {
-  background: white; border-radius: 18px; padding: 40px 44px;
-  width: min(680px, 96vw); box-shadow: var(--shadow); margin-bottom: 20px;
-}
-.card-title {
-  font-family: var(--font-head); font-size: 1.55rem; color: var(--ink);
-  margin-bottom: 4px; display: flex; align-items: center; gap: 12px;
-}
-.step-badge {
-  background: var(--ink); color: white; font-family: var(--font-body);
-  font-size: 0.72rem; font-weight: 700; border-radius: 99px;
-  padding: 3px 11px; letter-spacing: 0.04em; text-transform: uppercase; flex-shrink: 0;
-}
-.card-sub { color: #999; font-size: 0.9rem; margin-bottom: 28px; margin-top: 2px; }
+/* ── LIBRARY SCREEN ── */
+.lib-wrap { min-height: 100vh; padding: 40px 24px 60px; max-width: 900px; margin: 0 auto; }
+.lib-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 36px; flex-wrap: wrap; gap: 16px; }
+.lib-title { font-family: var(--font-head); font-size: 2.4rem; color: var(--ink); line-height: 1.1; }
+.lib-title span { color: var(--accent); }
+.lib-subtitle { color: #aaa; font-size: 0.9rem; margin-top: 4px; }
 
-.steps-row { display: flex; gap: 8px; margin-bottom: 32px; align-items: center; }
-.step-dot {
-  width: 32px; height: 32px; border-radius: 50%;
-  border: 2px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.78rem; font-weight: 700; color: #bbb;
-  transition: all 0.2s; flex-shrink: 0;
+.lib-search {
+  display: flex; align-items: center; gap: 10px;
+  background: white; border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 8px 14px; width: 240px;
 }
+.lib-search input { border: none; outline: none; font-family: var(--font-body); font-size: 0.92rem; flex: 1; background: none; }
+
+.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+
+.lesson-card {
+  background: white; border-radius: 14px; padding: 22px 24px;
+  box-shadow: var(--shadow); cursor: pointer; border: 2px solid transparent;
+  transition: border-color 0.18s, transform 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+.lesson-card:hover { border-color: var(--accent2); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.12); }
+.lesson-card-kurs {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--accent2); margin-bottom: 6px;
+}
+.lesson-card-topic { font-family: var(--font-head); font-size: 1.2rem; color: var(--ink); margin-bottom: 10px; line-height: 1.2; }
+.lesson-card-date { font-size: 0.82rem; color: #aaa; margin-bottom: 12px; }
+.lesson-card-goals { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
+.lesson-card-goal-tag {
+  background: var(--plan-bg); border: 1px solid #bbd6f5;
+  border-radius: 99px; padding: 2px 10px; font-size: 0.75rem; color: var(--ink);
+}
+.lesson-card-footer { display: flex; align-items: center; justify-content: space-between; }
+.lesson-card-source {
+  font-size: 0.75rem; padding: 3px 10px; border-radius: 99px; font-weight: 600;
+}
+.lesson-card-source.local { background: #f0f0f0; color: #888; }
+.lesson-card-source.cloud { background: #e8f4fd; color: var(--accent2); }
+.lesson-card-source.both { background: #e8f9ee; color: var(--green); }
+.lesson-card-del {
+  background: none; border: none; cursor: pointer; color: #ddd;
+  font-size: 1rem; padding: 4px 8px; border-radius: 6px;
+  transition: color 0.15s, background 0.15s; position: absolute; top: 14px; right: 14px;
+}
+.lesson-card-del:hover { color: var(--accent); background: #fff0f0; }
+
+.lib-empty {
+  grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #bbb;
+}
+.lib-empty-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+.lib-empty-text { font-size: 1rem; }
+
+.btn-new-lesson {
+  background: var(--ink); color: white; border: none; border-radius: 10px;
+  padding: 12px 24px; font-family: var(--font-body); font-size: 0.95rem;
+  font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+  transition: background 0.18s, transform 0.12s; white-space: nowrap;
+}
+.btn-new-lesson:hover { background: var(--accent); transform: translateY(-1px); }
+
+.lib-section-title {
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #bbb; margin-bottom: 14px; margin-top: 28px;
+}
+.lib-section-title:first-child { margin-top: 0; }
+
+/* ── WIZARD ── */
+.wizard-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px 16px 60px; }
+.card { background: white; border-radius: 18px; padding: 40px 44px; width: min(680px, 96vw); box-shadow: var(--shadow); margin-bottom: 20px; }
+.card-title { font-family: var(--font-head); font-size: 1.55rem; color: var(--ink); margin-bottom: 4px; display: flex; align-items: center; gap: 12px; }
+.step-badge { background: var(--ink); color: white; font-family: var(--font-body); font-size: 0.72rem; font-weight: 700; border-radius: 99px; padding: 3px 11px; letter-spacing: 0.04em; text-transform: uppercase; flex-shrink: 0; }
+.card-sub { color: #999; font-size: 0.9rem; margin-bottom: 28px; margin-top: 2px; }
+.steps-row { display: flex; gap: 8px; margin-bottom: 32px; align-items: center; }
+.step-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; color: #bbb; transition: all 0.2s; flex-shrink: 0; }
 .step-dot.active { border-color: var(--ink); background: var(--ink); color: white; }
 .step-dot.done { border-color: var(--green); background: var(--green); color: white; }
 .step-line { flex: 1; height: 2px; background: var(--border); border-radius: 2px; }
 .step-line.done { background: var(--green); }
 
-label.field-label {
-  display: block; font-size: 0.8rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.06em; color: #888;
-  margin-bottom: 6px; margin-top: 20px;
-}
+label.field-label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 6px; margin-top: 20px; }
 label.field-label:first-of-type { margin-top: 0; }
-
-input[type="text"], input[type="date"], textarea.field {
-  width: 100%; border: 1.5px solid var(--border); border-radius: 9px;
-  padding: 11px 14px; font-family: var(--font-body); font-size: 0.95rem;
-  color: var(--ink); background: white; outline: none; transition: border-color 0.15s;
-}
+input[type="text"], input[type="date"], textarea.field { width: 100%; border: 1.5px solid var(--border); border-radius: 9px; padding: 11px 14px; font-family: var(--font-body); font-size: 0.95rem; color: var(--ink); background: white; outline: none; transition: border-color 0.15s; }
 input[type="text"]:focus, input[type="date"]:focus, textarea.field:focus { border-color: var(--accent2); }
 textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 .goals-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .goal-row { display: flex; align-items: center; gap: 8px; }
-.goal-row input {
-  flex: 1; border: 1.5px solid var(--border); border-radius: 8px;
-  padding: 9px 12px; font-family: var(--font-body); font-size: 0.93rem;
-  outline: none; transition: border-color 0.15s;
-}
+.goal-row input { flex: 1; border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px; font-family: var(--font-body); font-size: 0.93rem; outline: none; transition: border-color 0.15s; }
 .goal-row input:focus { border-color: var(--accent2); }
-.goal-num {
-  width: 24px; height: 24px; border-radius: 50%;
-  background: var(--plan-bg); color: var(--accent2);
-  font-size: 0.75rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.del-goal-btn {
-  background: none; border: none; cursor: pointer; color: #ccc;
-  font-size: 1rem; padding: 2px 6px; border-radius: 5px; transition: color 0.15s, background 0.15s;
-}
+.goal-num { width: 24px; height: 24px; border-radius: 50%; background: var(--plan-bg); color: var(--accent2); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.del-goal-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 1rem; padding: 2px 6px; border-radius: 5px; transition: color 0.15s, background 0.15s; }
 .del-goal-btn:hover { color: var(--accent); background: #fff0f0; }
 
-.upload-zone {
-  border: 2px dashed var(--border); border-radius: 12px;
-  padding: 24px 20px; text-align: center; cursor: pointer;
-  transition: border-color 0.2s, background 0.2s; position: relative;
-}
+.upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 24px 20px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; position: relative; }
 .upload-zone:hover { border-color: var(--accent2); background: #f0f6ff; }
 .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 .upload-zone .uz-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
 .upload-zone .uz-label { font-weight: 600; font-size: 0.93rem; color: var(--ink); }
 .upload-zone .uz-sub { font-size: 0.82rem; color: #aaa; margin-top: 4px; }
-
 .file-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.file-chip {
-  background: #f0f6ff; border: 1.5px solid #bbd6f5; border-radius: 99px;
-  padding: 5px 14px; font-size: 0.82rem;
-  display: flex; align-items: center; gap: 7px; color: var(--ink);
-}
-.file-chip .chip-remove {
-  background: none; border: none; cursor: pointer; color: #aaa;
-  font-size: 0.85rem; padding: 0; transition: color 0.15s;
-}
+.file-chip { background: #f0f6ff; border: 1.5px solid #bbd6f5; border-radius: 99px; padding: 5px 14px; font-size: 0.82rem; display: flex; align-items: center; gap: 7px; color: var(--ink); }
+.file-chip .chip-remove { background: none; border: none; cursor: pointer; color: #aaa; font-size: 0.85rem; padding: 0; transition: color 0.15s; }
 .file-chip .chip-remove:hover { color: var(--accent); }
 
 #planTable { width: 100%; border-collapse: collapse; font-size: 0.93rem; margin-bottom: 10px; }
-#planTable th {
-  background: var(--ink); color: white; padding: 9px 13px;
-  text-align: left; font-size: 0.78rem; font-weight: 600;
-  letter-spacing: 0.05em; text-transform: uppercase;
-}
+#planTable th { background: var(--ink); color: white; padding: 9px 13px; text-align: left; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
 #planTable th:first-child { border-radius: 8px 0 0 8px; width: 100px; }
 #planTable th:last-child { border-radius: 0 8px 8px 0; width: 36px; }
 #planTable td { padding: 8px 13px; border-bottom: 1px solid var(--border); outline: none; }
 #planTable td:focus { background: #f0f6ff; }
 #planTable tr:last-child td { border-bottom: none; }
-.del-row-btn {
-  background: none; border: none; cursor: pointer; color: #ccc;
-  font-size: 0.95rem; padding: 3px 7px; border-radius: 4px; transition: color 0.15s, background 0.15s;
-}
+.del-row-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 0.95rem; padding: 3px 7px; border-radius: 4px; transition: color 0.15s, background 0.15s; }
 .del-row-btn:hover { color: var(--accent); background: #fff0f0; }
-
 .btn-row { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-.btn-secondary {
-  background: none; border: 1.5px solid var(--border); color: var(--ink);
-  border-radius: 8px; padding: 8px 18px; font-family: var(--font-body);
-  font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 6px;
-  transition: border-color 0.15s, background 0.15s;
-}
+.btn-secondary { background: none; border: 1.5px solid var(--border); color: var(--ink); border-radius: 8px; padding: 8px 18px; font-family: var(--font-body); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: border-color 0.15s, background 0.15s; }
 .btn-secondary:hover { border-color: var(--accent2); background: #f0f6ff; }
-.btn-primary {
-  background: var(--ink); color: white; border: none; border-radius: 9px;
-  padding: 13px 32px; font-family: var(--font-body); font-size: 1rem;
-  font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
-  transition: background 0.18s, transform 0.12s; margin-top: 28px;
-}
+.btn-primary { background: var(--ink); color: white; border: none; border-radius: 9px; padding: 13px 32px; font-family: var(--font-body); font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.18s, transform 0.12s; margin-top: 28px; }
 .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
 .divider { border: none; border-top: 1.5px solid var(--border); margin: 28px 0; }
 
 /* ── APP ── */
 #appScreen { display: grid; grid-template-columns: 58px 1fr 340px; height: 100vh; overflow: hidden; }
 #appScreen.hidden { display: none; }
-
-.toolbar {
-  background: var(--toolbar-bg); display: flex; flex-direction: column;
-  align-items: center; padding: 12px 0; gap: 2px; z-index: 10; overflow-y: auto;
-}
-.tool-group {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 3px; width: 100%; padding: 8px 0; border-bottom: 1px solid #2e2e4a;
-}
+.toolbar { background: var(--toolbar-bg); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 2px; z-index: 10; overflow-y: auto; }
+.tool-group { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; padding: 8px 0; border-bottom: 1px solid #2e2e4a; }
 .tool-group:last-child { border-bottom: none; margin-top: auto; }
-.tool-btn {
-  background: none; border: none; color: rgba(255,255,255,0.6);
-  font-size: 1.2rem; width: 42px; height: 42px; border-radius: 8px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s, color 0.15s; position: relative;
-}
+.tool-btn { background: none; border: none; color: rgba(255,255,255,0.6); font-size: 1.2rem; width: 42px; height: 42px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s; position: relative; }
 .tool-btn:hover { background: rgba(255,255,255,0.1); color: white; }
 .tool-btn.active { background: rgba(255,255,255,0.15); color: white; }
-.tool-btn[data-tip]:hover::after {
-  content: attr(data-tip); position: absolute; left: 54px;
-  background: #222; color: white; font-size: 0.76rem; font-family: var(--font-body);
-  padding: 4px 10px; border-radius: 5px; white-space: nowrap; z-index: 100; pointer-events: none;
-}
+.tool-btn[data-tip]:hover::after { content: attr(data-tip); position: absolute; left: 54px; background: #222; color: white; font-size: 0.76rem; font-family: var(--font-body); padding: 4px 10px; border-radius: 5px; white-space: nowrap; z-index: 100; pointer-events: none; }
 .page-indicator { color: rgba(255,255,255,0.35); font-size: 0.68rem; text-align: center; font-family: var(--font-body); line-height: 1; margin-top: 1px; }
 .color-dot { width: 17px; height: 17px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: border-color 0.15s, transform 0.12s; }
 .color-dot:hover { transform: scale(1.15); }
@@ -193,42 +166,24 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 #draw-canvas.pan-mode { cursor: grab; }
 
 .right-panel { display: grid; grid-template-rows: auto auto 1fr; overflow: hidden; background: #f7f5f1; border-left: 1px solid var(--border); }
-
 .info-strip { background: white; border-bottom: 1px solid var(--border); padding: 14px 16px; overflow-y: auto; max-height: 36vh; }
 .info-strip .lbl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #aaa; margin-bottom: 3px; margin-top: 10px; }
 .info-strip .lbl:first-child { margin-top: 0; }
 .info-strip .val { font-size: 0.88rem; color: var(--ink); line-height: 1.5; }
 .info-strip .val.big { font-family: var(--font-head); font-size: 1.05rem; }
-.goal-tag {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: #eef6ff; border: 1px solid #bbd6f5;
-  border-radius: 99px; padding: 3px 12px 3px 8px;
-  font-size: 0.8rem; color: var(--ink); margin: 2px 3px 2px 0;
-}
+.goal-tag { display: inline-flex; align-items: center; gap: 6px; background: #eef6ff; border: 1px solid #bbd6f5; border-radius: 99px; padding: 3px 12px 3px 8px; font-size: 0.8rem; color: var(--ink); margin: 2px 3px 2px 0; }
 .goal-tag::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); flex-shrink: 0; }
-
 .sheets-panel { background: #fff8f0; border-bottom: 1px solid var(--border); padding: 10px 14px; }
 .panel-title { font-family: var(--font-head); font-size: 0.95rem; color: var(--ink); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
 .sheets-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
-.sheet-thumb {
-  flex-shrink: 0; width: 68px; cursor: pointer; border-radius: 7px; overflow: hidden;
-  border: 2px solid transparent; transition: border-color 0.15s, transform 0.12s;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.12);
-}
+.sheet-thumb { flex-shrink: 0; width: 68px; cursor: pointer; border-radius: 7px; overflow: hidden; border: 2px solid transparent; transition: border-color 0.15s, transform 0.12s; box-shadow: 0 1px 6px rgba(0,0,0,0.12); }
 .sheet-thumb:hover { border-color: var(--accent2); transform: translateY(-2px); }
 .sheet-thumb.active-sheet { border-color: var(--accent); }
 .sheet-thumb canvas { display: block; width: 68px; height: auto; }
 .sheet-thumb .sheet-label { background: var(--ink); color: white; font-size: 0.58rem; font-weight: 600; padding: 2px 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .no-sheets { font-size: 0.82rem; color: #bbb; font-style: italic; }
-
 .panel-tabs { display: flex; border-bottom: 1px solid var(--border); background: white; }
-.panel-tab {
-  flex: 1; padding: 9px 6px; font-size: 0.82rem; font-weight: 600;
-  text-align: center; cursor: pointer; border-bottom: 2px solid transparent;
-  color: #aaa; transition: color 0.15s, border-color 0.15s;
-  background: none; border-top: none; border-left: none; border-right: none;
-  font-family: var(--font-body);
-}
+.panel-tab { flex: 1; padding: 9px 6px; font-size: 0.82rem; font-weight: 600; text-align: center; cursor: pointer; border-bottom: 2px solid transparent; color: #aaa; transition: color 0.15s, border-color 0.15s; background: none; border-top: none; border-left: none; border-right: none; font-family: var(--font-body); }
 .panel-tab.active { color: var(--ink); border-bottom-color: var(--ink); }
 .tab-content { display: none; flex: 1; overflow: hidden; flex-direction: column; }
 .tab-content.active { display: flex; }
@@ -253,7 +208,7 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 .sheet-modal-scroll { overflow: auto; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .sheet-page-canvas { display: block; box-shadow: 0 2px 12px rgba(0,0,0,0.4); border-radius: 4px; max-width: 100%; }
 
-/* Reset modal */
+/* Modals */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
 .modal { background: white; border-radius: 14px; padding: 32px 36px; max-width: 360px; width: 90vw; box-shadow: 0 8px 40px rgba(0,0,0,0.18); text-align: center; }
 .modal h3 { font-family: var(--font-head); font-size: 1.4rem; margin-bottom: 10px; }
@@ -263,19 +218,53 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 .btn-danger:hover { background: #a93226; }
 .btn-cancel { background: none; border: 1.5px solid var(--border); color: var(--ink); border-radius: 8px; padding: 10px 22px; font-family: var(--font-body); font-size: 0.95rem; cursor: pointer; }
 
+/* Sync badge */
+.sync-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; }
+.sync-badge.syncing { background: #fff8e1; color: #f39c12; }
+.sync-badge.synced { background: #e8f9ee; color: var(--green); }
+.sync-badge.error { background: #fff0f0; color: var(--accent); }
+
 .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ink); color: white; padding: 10px 22px; border-radius: 99px; font-size: 0.88rem; font-family: var(--font-body); z-index: 2000; transition: transform 0.3s cubic-bezier(.34,1.56,.64,1); box-shadow: 0 4px 16px rgba(0,0,0,0.2); pointer-events: none; }
 .toast.show { transform: translateX(-50%) translateY(0); }
+
+.loading-overlay { position: fixed; inset: 0; background: rgba(250,248,244,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; gap: 16px; backdrop-filter: blur(4px); }
+.loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--ink); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading-text { font-size: 0.95rem; color: #888; font-family: var(--font-body); }
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<!-- ══ SCHRITT 1: THEMA & ZIELE ══ -->
-<div id="dashScreen" class="screen">
-<div class="wizard-wrap">
-  <div style="margin-bottom:28px; text-align:center;">
-    <div style="font-family:var(--font-head); font-size:2.2rem; color:var(--ink); line-height:1.1;">Unterrichts-Tool</div>
-    <div style="color:#aaa; font-size:0.93rem; margin-top:6px;">Vorbereitung einer neuen Unterrichtsstunde</div>
+<!-- ══ BIBLIOTHEK ══ -->
+<div id="libraryScreen" class="screen">
+  <div class="lib-wrap">
+    <div class="lib-header">
+      <div>
+        <div class="lib-title">Unterrichts<span>-Tool</span></div>
+        <div class="lib-subtitle">Deine gespeicherten Unterrichtsstunden</div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div class="lib-search">
+          <span>🔍</span>
+          <input type="text" id="searchInput" placeholder="Suchen nach Thema, Kurs ...">
+        </div>
+        <button class="btn-new-lesson" onclick="startNewLesson()">＋ Neue Stunde</button>
+      </div>
+    </div>
+
+    <div class="lib-section-title" id="libSectionTitle">Gespeicherte Stunden</div>
+    <div class="lib-grid" id="libGrid">
+      <div class="lib-empty">
+        <span class="lib-empty-icon">📚</span>
+        <div class="lib-empty-text">Noch keine Stunden gespeichert.<br>Erstelle deine erste Unterrichtsstunde!</div>
+      </div>
+    </div>
   </div>
+</div>
+
+<!-- ══ SCHRITT 1: THEMA & ZIELE ══ -->
+<div id="dashScreen" class="screen hidden">
+<div class="wizard-wrap">
   <div class="steps-row" style="width:min(680px,96vw);">
     <div class="step-dot active">1</div><div class="step-line"></div>
     <div class="step-dot">2</div><div class="step-line"></div>
@@ -285,7 +274,6 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
   <div class="card">
     <div class="card-title"><span class="step-badge">Schritt 1</span> Thema & Lernziele</div>
     <div class="card-sub">Definiere das Thema, die Klasse und die Ziele dieser Stunde</div>
-
     <div class="two-col">
       <div>
         <label class="field-label" for="lessonTopic">Thema der Stunde</label>
@@ -296,10 +284,8 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
         <input type="date" id="lessonDate">
       </div>
     </div>
-
     <label class="field-label" for="lessonClass">Klasse / Kurs</label>
     <input type="text" id="lessonClass" placeholder="z.B. 9b oder Mathe LK 11">
-
     <label class="field-label">Lernziele</label>
     <div class="goals-list" id="goalsList">
       <div class="goal-row">
@@ -311,8 +297,10 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
     <div class="btn-row">
       <button class="btn-secondary" onclick="addGoal()">＋ Lernziel hinzufügen</button>
     </div>
-
-    <button class="btn-primary" onclick="goToStep2()">Weiter zu den Materialien →</button>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:28px;">
+      <button class="btn-secondary" onclick="show('libraryScreen'); hide('dashScreen')">← Bibliothek</button>
+      <button class="btn-primary" style="margin-top:0;" onclick="goToStep2()">Weiter zu den Materialien →</button>
+    </div>
   </div>
 </div>
 </div>
@@ -329,16 +317,14 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
   <div class="card">
     <div class="card-title"><span class="step-badge">Schritt 2</span> Materialien hochladen</div>
     <div class="card-sub">Musterlösung und Arbeitsblätter für diese Stunde</div>
-
     <label class="field-label">Musterlösung (PDF) <span style="color:var(--accent);">*</span></label>
-    <div class="upload-zone" id="musterZone">
+    <div class="upload-zone">
       <input type="file" id="musterInput" accept="application/pdf" onchange="handleMuster(this)">
       <span class="uz-icon">📋</span>
       <div class="uz-label">Musterlösung auswählen</div>
       <div class="uz-sub">Wird in der Hauptansicht angezeigt und annotiert</div>
     </div>
     <div class="file-chips" id="musterChips"></div>
-
     <label class="field-label" style="margin-top:24px;">Arbeitsblätter (mehrere PDFs möglich)</label>
     <div class="upload-zone">
       <input type="file" id="sheetsInput" accept="application/pdf" multiple onchange="handleSheets(this)">
@@ -347,7 +333,6 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
       <div class="uz-sub">Werden seitlich als Miniaturansicht angezeigt</div>
     </div>
     <div class="file-chips" id="sheetsChips"></div>
-
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:28px;">
       <button class="btn-secondary" onclick="show('dashScreen'); hide('pdfScreen')">← Zurück</button>
       <button class="btn-primary" style="margin-top:0;" onclick="goToStep3()">Weiter zur Planung →</button>
@@ -368,25 +353,19 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
   <div class="card">
     <div class="card-title"><span class="step-badge">Schritt 3</span> Unterrichtsplanung</div>
     <div class="card-sub">Tabellarischer Verlauf der Stunde</div>
-
     <table id="planTable">
       <thead><tr><th>Zeit</th><th>Inhalt / Phase</th><th></th></tr></thead>
       <tbody id="planBody">
         <tr><td contenteditable="true">08:00</td><td contenteditable="true">Einstieg / Begrüßung</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td></tr>
         <tr><td contenteditable="true">08:10</td><td contenteditable="true">Erarbeitung</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td></tr>
-        <tr><td contenteditable="true">08:35</td><td contenteditable="true">Sicherung / Ergebnispräsentation</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td></tr>
-        <tr><td contenteditable="true">08:50</td><td contenteditable="true">Abschluss / Hausaufgabe</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td></tr>
+        <tr><td contenteditable="true">08:35</td><td contenteditable="true">Sicherung</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td></tr>
+        <tr><td contenteditable="true">08:50</td><td contenteditable="true">Abschluss</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td></tr>
       </tbody>
     </table>
-    <div class="btn-row">
-      <button class="btn-secondary" onclick="addRow()">＋ Zeile hinzufügen</button>
-    </div>
-
+    <div class="btn-row"><button class="btn-secondary" onclick="addRow()">＋ Zeile hinzufügen</button></div>
     <hr class="divider">
-
     <label class="field-label">Beobachtungen / Notizen</label>
-    <textarea class="field" id="planNotes" placeholder="Notizen zur Klasse, Besonderheiten, Vorbereitung ..."></textarea>
-
+    <textarea class="field" id="planNotes" placeholder="Notizen zur Klasse, Besonderheiten ..."></textarea>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <button class="btn-secondary" onclick="show('pdfScreen'); hide('planScreen')">← Zurück</button>
       <button class="btn-primary" style="margin-top:0;" onclick="startLesson()">Unterricht starten →</button>
@@ -397,7 +376,6 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 
 <!-- ══ APP ══ -->
 <div id="appScreen" class="hidden" style="display:none; grid-template-columns:58px 1fr 340px; height:100vh; overflow:hidden;">
-
   <div class="toolbar">
     <div class="tool-group">
       <button class="tool-btn" id="prevBtn" data-tip="Vorherige Seite">◀</button>
@@ -428,9 +406,9 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
       <button class="tool-btn" data-tip="Seite löschen" onclick="clearDrawings()">🗑</button>
     </div>
     <div class="tool-group">
-      <button class="tool-btn" id="exportBtn" data-tip="Lokal speichern">💾</button>
+      <button class="tool-btn" id="saveLocalBtn" data-tip="Lokal speichern">💾</button>
       <button class="tool-btn" id="uploadBtn" data-tip="In Supabase speichern">☁️</button>
-      <button class="tool-btn" id="newBtn" data-tip="Neue Unterrichtseinheit">🔄</button>
+      <button class="tool-btn" id="libBtn" data-tip="Zur Bibliothek">📚</button>
     </div>
   </div>
 
@@ -443,28 +421,20 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 
   <div class="right-panel">
     <div class="info-strip" id="infoStrip"></div>
-
     <div class="sheets-panel">
       <div class="panel-title">📄 Arbeitsblätter</div>
-      <div class="sheets-scroll" id="sheetsScroll">
-        <span class="no-sheets">Keine Arbeitsblätter hochgeladen</span>
-      </div>
+      <div class="sheets-scroll" id="sheetsScroll"><span class="no-sheets">Keine Arbeitsblätter hochgeladen</span></div>
     </div>
-
     <div class="tabs-section">
       <div class="panel-tabs">
         <button class="panel-tab active" onclick="switchTab('planTab',this)">📋 Planung</button>
         <button class="panel-tab" onclick="switchTab('notesTab',this)">📝 Notizen</button>
       </div>
       <div class="tab-content active" id="planTab">
-        <div class="plan-panel">
-          <table class="plan-display-table" id="planDisplay"></table>
-        </div>
+        <div class="plan-panel"><table class="plan-display-table" id="planDisplay"></table></div>
       </div>
       <div class="tab-content" id="notesTab">
-        <div class="notes-panel">
-          <textarea id="notesDisplay" placeholder="Beobachtungen und Notizen ..."></textarea>
-        </div>
+        <div class="notes-panel"><textarea id="notesDisplay" placeholder="Beobachtungen und Notizen ..."></textarea></div>
       </div>
     </div>
   </div>
@@ -481,16 +451,37 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
   </div>
 </div>
 
-<!-- Reset modal -->
+<!-- Reset/Bibliothek modal -->
 <div class="modal-overlay hidden" id="resetModal">
   <div class="modal">
-    <h3>Neue Einheit?</h3>
-    <p>Alle nicht exportierten Daten und Zeichnungen gehen verloren.</p>
-    <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
-      <button class="btn-danger" onclick="doReset()">Ja, neu starten</button>
+    <h3>Zur Bibliothek?</h3>
+    <p>Nicht gespeicherte Änderungen gehen verloren. Möchtest du vorher speichern?</p>
+    <div class="modal-btns" style="flex-direction:column; gap:8px;">
+      <button class="btn-primary" style="margin-top:0; justify-content:center;" onclick="saveAndGoToLibrary()">☁️ Speichern & zur Bibliothek</button>
+      <div style="display:flex; gap:8px; justify-content:center;">
+        <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
+        <button class="btn-danger" onclick="goToLibrary()">Ohne Speichern</button>
+      </div>
     </div>
   </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-overlay hidden" id="deleteModal">
+  <div class="modal">
+    <h3>Stunde löschen?</h3>
+    <p id="deleteModalText">Diese Stunde wird aus der Bibliothek entfernt.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeDeleteModal()">Abbrechen</button>
+      <button class="btn-danger" onclick="confirmDelete()">Löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Wird geladen ...</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -498,7 +489,17 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-// ═══ STATE ═══
+// ═══════════════════════════════════════════════════
+// SUPABASE CONFIG
+// ═══════════════════════════════════════════════════
+const SUPABASE_URL = 'https://btrhkgnynlzgdobpsetd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0cmhrZ255bmx6Z2RvYnBzZXRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MTg2NDAsImV4cCI6MjA5MDI5NDY0MH0.ixUCXBgH17cusMQEU0IbCPgkHCHUrT67VUlPyd_-UtA';
+const BUCKET = 'unterricht';
+const LS_KEY = 'unterrichts_bibliothek'; // localStorage key
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
 let musterData = null, musterName = '';
 let sheetsData = [];
 let pdfDoc = null, pageNum = 1;
@@ -507,8 +508,12 @@ let sheetDocs = [];
 let tool = 'pen', drawColor = '#c0392b', drawSize = 2;
 let isDrawing = false, lastX = 0, lastY = 0;
 let isPanning = false, panStartX = 0, panStartY = 0;
+let currentLessonId = null; // ID der aktuell geladenen Stunde
+let pendingDeleteId = null;
 
-// ═══ ELEMENTS ═══
+// ═══════════════════════════════════════════════════
+// ELEMENTS
+// ═══════════════════════════════════════════════════
 const pdfCanvas = document.getElementById('pdf-render');
 const drawCanvas = document.getElementById('draw-canvas');
 const pdfCtx = pdfCanvas.getContext('2d');
@@ -520,16 +525,220 @@ const notesDisplay = document.getElementById('notesDisplay');
 const infoStrip = document.getElementById('infoStrip');
 const sheetsScroll = document.getElementById('sheetsScroll');
 
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
 window.onload = () => {
   document.getElementById('lessonDate').value = new Date().toISOString().slice(0,10);
+  renderLibrary();
+  document.getElementById('searchInput').addEventListener('input', renderLibrary);
 };
 
-// ═══ STEP 1 ═══
+// ═══════════════════════════════════════════════════
+// BIBLIOTHEK – localStorage helpers
+// ═══════════════════════════════════════════════════
+function getLibrary() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
+}
+function saveLibrary(lib) {
+  localStorage.setItem(LS_KEY, JSON.stringify(lib));
+}
+
+function getLessonMeta() {
+  const topic = document.getElementById('lessonTopic').value.trim();
+  const dateVal = document.getElementById('lessonDate').value;
+  const cls = document.getElementById('lessonClass').value.trim();
+  const goals = Array.from(document.querySelectorAll('#goalsList input')).map(i=>i.value.trim()).filter(Boolean);
+  const planRows = [];
+  document.querySelectorAll('#planBody tr').forEach(r => {
+    const cells = r.querySelectorAll('td[contenteditable]');
+    planRows.push({ zeit: cells[0]?.innerText.trim()||'', inhalt: cells[1]?.innerText.trim()||'' });
+  });
+  const notes = document.getElementById('planNotes').value;
+  return { topic, dateVal, cls, goals, planRows, notes };
+}
+
+function buildFileName(cls, topic, dateVal) {
+  const clean = s => (s||'').trim().replace(/[^a-zA-Z0-9äöüÄÖÜß\-]/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const dateStr = dateVal || new Date().toISOString().slice(0,10);
+  return `${clean(cls)||'Kurs'}_${clean(topic)||'Thema'}_${dateStr}.pdf`;
+}
+
+// ═══════════════════════════════════════════════════
+// BIBLIOTHEK – RENDER
+// ═══════════════════════════════════════════════════
+function renderLibrary() {
+  const lib = getLibrary();
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const grid = document.getElementById('libGrid');
+  const title = document.getElementById('libSectionTitle');
+
+  const filtered = lib.filter(l =>
+    !query ||
+    l.topic?.toLowerCase().includes(query) ||
+    l.cls?.toLowerCase().includes(query) ||
+    l.goals?.some(g => g.toLowerCase().includes(query))
+  );
+
+  title.textContent = filtered.length
+    ? `${filtered.length} Stunde${filtered.length !== 1 ? 'n' : ''} gespeichert`
+    : 'Gespeicherte Stunden';
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="lib-empty">
+      <span class="lib-empty-icon">${query ? '🔍' : '📚'}</span>
+      <div class="lib-empty-text">${query ? 'Keine Stunden gefunden.' : 'Noch keine Stunden gespeichert.<br>Erstelle deine erste Unterrichtsstunde!'}</div>
+    </div>`;
+    return;
+  }
+
+  // Sort newest first
+  const sorted = [...filtered].sort((a,b) => (b.dateVal||'').localeCompare(a.dateVal||''));
+
+  grid.innerHTML = sorted.map(lesson => {
+    const dateStr = lesson.dateVal
+      ? new Date(lesson.dateVal).toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'})
+      : '—';
+    const sourceLabel = lesson.cloudPath
+      ? `<span class="lesson-card-source both">☁️ gespeichert</span>`
+      : `<span class="lesson-card-source local">💾 lokal</span>`;
+    const goalsHtml = (lesson.goals||[]).slice(0,3).map(g =>
+      `<span class="lesson-card-goal-tag">${g}</span>`).join('');
+
+    return `<div class="lesson-card" onclick="loadLesson('${lesson.id}')">
+      <button class="lesson-card-del" onclick="event.stopPropagation(); askDeleteLesson('${lesson.id}', '${(lesson.topic||'').replace(/'/g,'\\'')}')">✕</button>
+      <div class="lesson-card-kurs">${lesson.cls || 'Kein Kurs'}</div>
+      <div class="lesson-card-topic">${lesson.topic || 'Kein Thema'}</div>
+      <div class="lesson-card-date">📅 ${dateStr}</div>
+      ${goalsHtml ? `<div class="lesson-card-goals">${goalsHtml}</div>` : ''}
+      <div class="lesson-card-footer">${sourceLabel}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// NEUE STUNDE STARTEN
+// ═══════════════════════════════════════════════════
+function startNewLesson() {
+  currentLessonId = null;
+  resetWizardFields();
+  hide('libraryScreen');
+  show('dashScreen');
+}
+
+// ═══════════════════════════════════════════════════
+// STUNDE LADEN
+// ═══════════════════════════════════════════════════
+async function loadLesson(id) {
+  const lib = getLibrary();
+  const lesson = lib.find(l => l.id === id);
+  if (!lesson) { showToast('Stunde nicht gefunden'); return; }
+
+  showLoading('Stunde wird geladen ...');
+
+  try {
+    // Felder wiederherstellen
+    document.getElementById('lessonTopic').value = lesson.topic || '';
+    document.getElementById('lessonDate').value = lesson.dateVal || '';
+    document.getElementById('lessonClass').value = lesson.cls || '';
+
+    // Ziele
+    const goalsList = document.getElementById('goalsList');
+    goalsList.innerHTML = '';
+    (lesson.goals || []).forEach((g, i) => {
+      const row = document.createElement('div');
+      row.className = 'goal-row';
+      row.innerHTML = `<div class="goal-num">${i+1}</div><input type="text" value="${g}"><button class="del-goal-btn" onclick="removeGoal(this)">✕</button>`;
+      goalsList.appendChild(row);
+    });
+    if (!lesson.goals?.length) addGoal();
+
+    // Planungstabelle
+    const planBody = document.getElementById('planBody');
+    planBody.innerHTML = '';
+    (lesson.planRows || []).forEach(r => {
+      const row = planBody.insertRow();
+      row.innerHTML = `<td contenteditable="true">${r.zeit}</td><td contenteditable="true">${r.inhalt}</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td>`;
+    });
+
+    document.getElementById('planNotes').value = lesson.notes || '';
+
+    // PDFs laden – aus Supabase oder Hinweis
+    musterData = null; musterName = ''; sheetsData = [];
+    document.getElementById('musterChips').innerHTML = '';
+    document.getElementById('sheetsChips').innerHTML = '';
+
+    if (lesson.cloudPath) {
+      // Musterlösung von Supabase laden
+      const musterPath = lesson.cloudMusterPath;
+      if (musterPath) {
+        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(musterPath)}`, {
+          headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        if (res.ok) {
+          const buf = await res.arrayBuffer();
+          musterData = new Uint8Array(buf);
+          musterName = musterPath;
+          document.getElementById('musterChips').innerHTML = `<div class="file-chip">☁️ ${musterPath}<button class="chip-remove" onclick="removeMuster()">✕</button></div>`;
+        }
+      }
+      // Arbeitsblätter laden
+      for (const sheetPath of (lesson.cloudSheetPaths || [])) {
+        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(sheetPath)}`, {
+          headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        if (res.ok) {
+          const buf = await res.arrayBuffer();
+          sheetsData.push({ name: sheetPath, data: new Uint8Array(buf) });
+        }
+      }
+      renderSheetChips();
+    }
+
+    currentLessonId = id;
+    hideLoading();
+
+    // Direkt in die App starten wenn Musterlösung vorhanden
+    if (musterData) {
+      await launchApp();
+    } else {
+      // Kein PDF – zum Material-Schritt
+      hide('libraryScreen');
+      show('pdfScreen');
+      showToast('Bitte Musterlösung hochladen');
+    }
+  } catch(e) {
+    hideLoading();
+    showToast('Fehler beim Laden: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// STUNDE LÖSCHEN
+// ═══════════════════════════════════════════════════
+function askDeleteLesson(id, topic) {
+  pendingDeleteId = id;
+  document.getElementById('deleteModalText').textContent = `"${topic}" wird aus der Bibliothek entfernt.`;
+  show('deleteModal');
+}
+function closeDeleteModal() { hide('deleteModal'); pendingDeleteId = null; }
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  const lib = getLibrary().filter(l => l.id !== pendingDeleteId);
+  saveLibrary(lib);
+  closeDeleteModal();
+  renderLibrary();
+  showToast('Stunde gelöscht');
+}
+
+// ═══════════════════════════════════════════════════
+// WIZARD – STEP 1
+// ═══════════════════════════════════════════════════
 function goToStep2() {
   if (!document.getElementById('lessonTopic').value.trim()) { showToast('Bitte ein Thema eingeben'); return; }
   hide('dashScreen'); show('pdfScreen');
 }
-
 function addGoal() {
   const list = document.getElementById('goalsList');
   const n = list.children.length + 1;
@@ -539,13 +748,14 @@ function addGoal() {
   list.appendChild(row);
   row.querySelector('input').focus();
 }
-
 function removeGoal(btn) {
   btn.closest('.goal-row').remove();
   document.querySelectorAll('#goalsList .goal-num').forEach((el,i) => el.textContent = i+1);
 }
 
-// ═══ STEP 2: Files ═══
+// ═══════════════════════════════════════════════════
+// WIZARD – STEP 2
+// ═══════════════════════════════════════════════════
 function handleMuster(input) {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
@@ -556,12 +766,11 @@ function handleMuster(input) {
   };
   reader.readAsArrayBuffer(file);
 }
-function removeMuster() { musterData = null; musterName = ''; document.getElementById('musterChips').innerHTML = ''; document.getElementById('musterInput').value = ''; }
-
+function removeMuster() { musterData=null; musterName=''; document.getElementById('musterChips').innerHTML=''; document.getElementById('musterInput').value=''; }
 function handleSheets(input) {
   Array.from(input.files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = e => { sheetsData.push({ name: file.name, data: new Uint8Array(e.target.result) }); renderSheetChips(); };
+    reader.onload = e => { sheetsData.push({name:file.name, data:new Uint8Array(e.target.result)}); renderSheetChips(); };
     reader.readAsArrayBuffer(file);
   });
 }
@@ -570,13 +779,14 @@ function renderSheetChips() {
     `<div class="file-chip">📄 ${s.name}<button class="chip-remove" onclick="removeSheet(${i})">✕</button></div>`).join('');
 }
 function removeSheet(i) { sheetsData.splice(i,1); renderSheetChips(); }
-
 function goToStep3() {
   if (!musterData) { showToast('Bitte Musterlösung hochladen'); return; }
   hide('pdfScreen'); show('planScreen');
 }
 
-// ═══ STEP 3 ═══
+// ═══════════════════════════════════════════════════
+// WIZARD – STEP 3 → APP
+// ═══════════════════════════════════════════════════
 function addRow() {
   const row = document.getElementById('planBody').insertRow();
   row.innerHTML = `<td contenteditable="true"></td><td contenteditable="true"></td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td>`;
@@ -586,8 +796,13 @@ function deleteRow(btn) { btn.closest('tr').remove(); }
 
 async function startLesson() {
   hide('planScreen');
+  await launchApp();
+}
+
+async function launchApp() {
   const appEl = document.getElementById('appScreen');
   appEl.classList.remove('hidden'); appEl.style.display = 'grid';
+  ['libraryScreen','dashScreen','pdfScreen','planScreen'].forEach(hide);
 
   const topic = document.getElementById('lessonTopic').value.trim();
   const dateVal = document.getElementById('lessonDate').value;
@@ -611,12 +826,50 @@ async function startLesson() {
   planDisplay.innerHTML = html + '</tbody>';
   notesDisplay.value = document.getElementById('planNotes').value;
 
+  drawHistory = {};
   pdfDoc = await pdfjsLib.getDocument({data: musterData}).promise;
-  pageNum = 1; renderPage(pageNum);
+  pageNum = 1;
+  renderPage(pageNum);
   buildSheetThumbnails();
+
+  // Metadaten sofort lokal speichern
+  saveMetaLocal();
 }
 
-// ═══ PDF ═══
+// ═══════════════════════════════════════════════════
+// METADATEN LOKAL SPEICHERN
+// ═══════════════════════════════════════════════════
+function saveMetaLocal(cloudPath, cloudMusterPath, cloudSheetPaths) {
+  const meta = getLessonMeta();
+  const lib = getLibrary();
+  const id = currentLessonId || `lesson_${Date.now()}`;
+  currentLessonId = id;
+
+  const existing = lib.findIndex(l => l.id === id);
+  const entry = {
+    id,
+    topic: meta.topic,
+    dateVal: meta.dateVal,
+    cls: meta.cls,
+    goals: meta.goals,
+    planRows: meta.planRows,
+    notes: meta.notes,
+    savedAt: new Date().toISOString(),
+    cloudPath: cloudPath || (existing >= 0 ? lib[existing].cloudPath : null),
+    cloudMusterPath: cloudMusterPath || (existing >= 0 ? lib[existing].cloudMusterPath : null),
+    cloudSheetPaths: cloudSheetPaths || (existing >= 0 ? lib[existing].cloudSheetPaths : []),
+  };
+
+  if (existing >= 0) lib[existing] = entry;
+  else lib.push(entry);
+
+  saveLibrary(lib);
+  return id;
+}
+
+// ═══════════════════════════════════════════════════
+// PDF RENDERING
+// ═══════════════════════════════════════════════════
 async function renderPage(num) {
   const page = await pdfDoc.getPage(num);
   const scale = Math.min(
@@ -625,264 +878,266 @@ async function renderPage(num) {
   const viewport = page.getViewport({scale});
   pdfCanvas.width = viewport.width; pdfCanvas.height = viewport.height;
   drawCanvas.width = viewport.width; drawCanvas.height = viewport.height;
-  await page.render({canvasContext: pdfCtx, viewport}).promise;
+  await page.render({canvasContext:pdfCtx, viewport}).promise;
   if (drawHistory[num]?.length) {
     const img = new Image();
     img.onload = () => drawCtx.drawImage(img,0,0);
     img.src = drawHistory[num][drawHistory[num].length-1];
-  } else { drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height); }
+  } else drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
   pageIndicator.textContent = `${num}/${pdfDoc.numPages}`;
   document.getElementById('prevBtn').style.opacity = num===1?'0.3':'1';
   document.getElementById('nextBtn').style.opacity = num===pdfDoc.numPages?'0.3':'1';
 }
-document.getElementById('prevBtn').addEventListener('click', () => { if(pageNum>1){saveDrawState();pageNum--;renderPage(pageNum);} });
-document.getElementById('nextBtn').addEventListener('click', () => { if(pdfDoc&&pageNum<pdfDoc.numPages){saveDrawState();pageNum++;renderPage(pageNum);} });
+document.getElementById('prevBtn').addEventListener('click',()=>{ if(pageNum>1){saveDrawState();pageNum--;renderPage(pageNum);} });
+document.getElementById('nextBtn').addEventListener('click',()=>{ if(pdfDoc&&pageNum<pdfDoc.numPages){saveDrawState();pageNum++;renderPage(pageNum);} });
 
-// ═══ SHEETS ═══
+// ═══════════════════════════════════════════════════
+// SHEETS
+// ═══════════════════════════════════════════════════
 async function buildSheetThumbnails() {
-  sheetDocs = []; sheetsScroll.innerHTML = '';
-  if (!sheetsData.length) { sheetsScroll.innerHTML = '<span class="no-sheets">Keine Arbeitsblätter hochgeladen</span>'; return; }
-  for (let si=0; si<sheetsData.length; si++) {
-    const doc = await pdfjsLib.getDocument({data:sheetsData[si].data}).promise;
+  sheetDocs=[]; sheetsScroll.innerHTML='';
+  if(!sheetsData.length){sheetsScroll.innerHTML='<span class="no-sheets">Keine Arbeitsblätter hochgeladen</span>';return;}
+  for(let si=0;si<sheetsData.length;si++){
+    const doc=await pdfjsLib.getDocument({data:sheetsData[si].data}).promise;
     sheetDocs.push(doc);
-    const page = await doc.getPage(1);
-    const vp = page.getViewport({scale:0.28});
-    const tc = document.createElement('canvas');
-    tc.width=vp.width; tc.height=vp.height;
+    const page=await doc.getPage(1);
+    const vp=page.getViewport({scale:0.28});
+    const tc=document.createElement('canvas');tc.width=vp.width;tc.height=vp.height;
     await page.render({canvasContext:tc.getContext('2d'),viewport:vp}).promise;
-    const thumb = document.createElement('div');
-    thumb.className='sheet-thumb'; thumb.dataset.idx=si;
+    const thumb=document.createElement('div');
+    thumb.className='sheet-thumb';thumb.dataset.idx=si;
     thumb.innerHTML=`<div class="sheet-label">${sheetsData[si].name.replace('.pdf','')}</div>`;
     thumb.prepend(tc);
     thumb.addEventListener('click',()=>openSheetModal(si));
     sheetsScroll.appendChild(thumb);
   }
 }
-
-async function openSheetModal(idx) {
-  const doc = sheetDocs[idx];
-  document.getElementById('sheetModalTitle').textContent = sheetsData[idx].name;
-  const scroll = document.getElementById('sheetModalScroll');
-  scroll.innerHTML = '';
+async function openSheetModal(idx){
+  const doc=sheetDocs[idx];
+  document.getElementById('sheetModalTitle').textContent=sheetsData[idx].name;
+  const scroll=document.getElementById('sheetModalScroll');scroll.innerHTML='';
   document.querySelectorAll('.sheet-thumb').forEach((t,i)=>t.classList.toggle('active-sheet',i===idx));
-  for (let p=1; p<=doc.numPages; p++) {
-    const page = await doc.getPage(p);
-    const vp = page.getViewport({scale:1.5});
-    const c = document.createElement('canvas');
-    c.className='sheet-page-canvas'; c.width=vp.width; c.height=vp.height;
+  for(let p=1;p<=doc.numPages;p++){
+    const page=await doc.getPage(p);const vp=page.getViewport({scale:1.5});
+    const c=document.createElement('canvas');c.className='sheet-page-canvas';c.width=vp.width;c.height=vp.height;
     await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
     scroll.appendChild(c);
   }
   show('sheetModal');
 }
-function closeSheetModal() { hide('sheetModal'); document.querySelectorAll('.sheet-thumb').forEach(t=>t.classList.remove('active-sheet')); }
+function closeSheetModal(){hide('sheetModal');document.querySelectorAll('.sheet-thumb').forEach(t=>t.classList.remove('active-sheet'));}
 
-// ═══ DRAWING ═══
-function getPos(e) {
-  const rect = drawCanvas.getBoundingClientRect();
-  const src = e.touches?e.touches[0]:e;
-  return { x:(src.clientX-rect.left)*(drawCanvas.width/rect.width), y:(src.clientY-rect.top)*(drawCanvas.height/rect.height) };
+// ═══════════════════════════════════════════════════
+// DRAWING
+// ═══════════════════════════════════════════════════
+function getPos(e){
+  const rect=drawCanvas.getBoundingClientRect();const src=e.touches?e.touches[0]:e;
+  return{x:(src.clientX-rect.left)*(drawCanvas.width/rect.width),y:(src.clientY-rect.top)*(drawCanvas.height/rect.height)};
 }
-
-drawCanvas.addEventListener('pointerdown', e => {
+drawCanvas.addEventListener('pointerdown',e=>{
   if(tool==='pan'){isPanning=true;panStartX=e.clientX-pdfArea.scrollLeft;panStartY=e.clientY-pdfArea.scrollTop;return;}
-  isDrawing=true; const p=getPos(e); lastX=p.x; lastY=p.y;
+  isDrawing=true;const p=getPos(e);lastX=p.x;lastY=p.y;
   if(tool==='highlight'){drawCtx.globalAlpha=0.3;drawCtx.globalCompositeOperation='multiply';}
   else if(tool==='eraser'){drawCtx.globalCompositeOperation='destination-out';drawCtx.globalAlpha=1;}
   else{drawCtx.globalAlpha=1;drawCtx.globalCompositeOperation='source-over';}
-  drawCtx.strokeStyle=drawColor;
-  drawCtx.lineWidth=tool==='highlight'?drawSize*5:drawSize;
-  drawCtx.lineCap='round';drawCtx.lineJoin='round';
-  drawCtx.beginPath();drawCtx.moveTo(lastX,lastY);
+  drawCtx.strokeStyle=drawColor;drawCtx.lineWidth=tool==='highlight'?drawSize*5:drawSize;
+  drawCtx.lineCap='round';drawCtx.lineJoin='round';drawCtx.beginPath();drawCtx.moveTo(lastX,lastY);
 });
-drawCanvas.addEventListener('pointermove', e => {
+drawCanvas.addEventListener('pointermove',e=>{
   if(tool==='pan'){if(isPanning){pdfArea.scrollLeft=e.clientX-panStartX;pdfArea.scrollTop=e.clientY-panStartY;}return;}
-  if(!isDrawing)return; e.preventDefault();
-  const p=getPos(e); drawCtx.lineTo(p.x,p.y); drawCtx.stroke(); lastX=p.x;lastY=p.y;
+  if(!isDrawing)return;e.preventDefault();const p=getPos(e);drawCtx.lineTo(p.x,p.y);drawCtx.stroke();lastX=p.x;lastY=p.y;
 });
-drawCanvas.addEventListener('pointerup', e => {
+drawCanvas.addEventListener('pointerup',e=>{
   if(tool==='pan'){isPanning=false;return;}
-  if(!isDrawing)return; isDrawing=false;
-  drawCtx.globalAlpha=1;drawCtx.globalCompositeOperation='source-over';
-  saveDrawState();
+  if(!isDrawing)return;isDrawing=false;drawCtx.globalAlpha=1;drawCtx.globalCompositeOperation='source-over';saveDrawState();
 });
 drawCanvas.addEventListener('pointerleave',()=>{isDrawing=false;isPanning=false;});
-
-function setTool(t) {
-  tool=t;
-  ['penBtn','highlightBtn','eraserBtn','panBtn'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+function setTool(t){
+  tool=t;['penBtn','highlightBtn','eraserBtn','panBtn'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
   const map={pen:'penBtn',highlight:'highlightBtn',eraser:'eraserBtn',pan:'panBtn'};
   document.getElementById(map[t])?.classList.add('active');
   drawCanvas.className=t==='eraser'?'eraser-mode':t==='pan'?'pan-mode':'';
 }
 function setColor(el){drawColor=el.dataset.color;document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));el.classList.add('selected');if(tool==='eraser'||tool==='pan')setTool('pen');}
 function setSize(sz,btn){drawSize=sz;document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
-
 function saveDrawState(){if(!drawHistory[pageNum])drawHistory[pageNum]=[];drawHistory[pageNum].push(drawCanvas.toDataURL());if(drawHistory[pageNum].length>30)drawHistory[pageNum].shift();}
 function undo(){if(!drawHistory[pageNum]||drawHistory[pageNum].length<2){drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);drawHistory[pageNum]=[];return;}drawHistory[pageNum].pop();const img=new Image();img.onload=()=>{drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);drawCtx.drawImage(img,0,0);};img.src=drawHistory[pageNum][drawHistory[pageNum].length-1];}
 function clearDrawings(){drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);drawHistory[pageNum]=[];showToast('Zeichnungen dieser Seite gelöscht');}
 
-// ═══ TABS ═══
+// ═══════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════
 function switchTab(tabId,btn){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel-tab').forEach(b=>b.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active'); btn.classList.add('active');
+  document.getElementById(tabId).classList.add('active');btn.classList.add('active');
 }
 
-// ═══ SUPABASE CONFIG ═══
-const SUPABASE_URL = 'https://btrhkgnynlzgdobpsetd.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0cmhrZ255bmx6Z2RvYnBzZXRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MTg2NDAsImV4cCI6MjA5MDI5NDY0MH0.ixUCXBgH17cusMQEU0IbCPgkHCHUrT67VUlPyd_-UtA';
-const BUCKET = 'unterricht';
-
-function buildFileName(cls, topic, dateVal) {
-  const clean = s => s.trim().replace(/[^a-zA-Z0-9äöüÄÖÜß\-]/g, '_').replace(/_+/g,'_').replace(/^_|_$/g,'');
-  const dateStr = dateVal ? dateVal : new Date().toISOString().slice(0,10);
-  const parts = [clean(cls)||'Kurs', clean(topic)||'Thema', dateStr].join('_');
-  return `${parts}.pdf`;
-}
-
-async function uploadToSupabase(pdfBlob, fileName) {
-  const encodedName = encodeURIComponent(fileName);
-  const url = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${encodedName}`;
-
-  console.log('⬆️ Upload zu:', url);
-  console.log('📦 Dateigröße:', pdfBlob.size, 'Bytes');
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/pdf',
-      'x-upsert': 'true'
-    },
-    body: pdfBlob
-  });
-
-  const responseText = await res.text();
-  console.log('📡 Status:', res.status);
-  console.log('📄 Antwort:', responseText);
-
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { const p = JSON.parse(responseText); msg = p.message || p.error || responseText; } catch { msg = responseText; }
-    throw new Error(msg);
-  }
-  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${encodedName}`;
-}
-
+// ═══════════════════════════════════════════════════
+// PDF BAUEN
+// ═══════════════════════════════════════════════════
 async function buildPdf() {
   saveDrawState();
-  const {jsPDF}=window.jspdf;
-  const pdf=new jsPDF('p','mm','a4');
-  const AW=210,AH=297;
-
+  const {jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');const AW=210,AH=297;
   const topic=document.getElementById('lessonTopic').value.trim();
   const dateVal=document.getElementById('lessonDate').value;
   const cls=document.getElementById('lessonClass').value.trim();
   const goals=Array.from(document.querySelectorAll('#goalsList input')).map(i=>i.value.trim()).filter(Boolean);
   const dateStr=dateVal?new Date(dateVal).toLocaleDateString('de-DE'):'—';
-
   pdf.setFont('helvetica','bold');pdf.setFontSize(18);pdf.text('Unterrichtseinheit',14,20);
   pdf.setFontSize(10);pdf.setFont('helvetica','normal');
-  pdf.text(`Thema: ${topic}`,14,30);
-  pdf.text(`Datum: ${dateStr}`,14,36);
+  pdf.text(`Thema: ${topic}`,14,30);pdf.text(`Datum: ${dateStr}`,14,36);
   if(cls)pdf.text(`Klasse: ${cls}`,14,42);
-
   let y=cls?50:44;
   if(goals.length){pdf.setFont('helvetica','bold');pdf.text('Lernziele:',14,y);y+=6;pdf.setFont('helvetica','normal');goals.forEach((g,i)=>{pdf.text(`${i+1}. ${g}`,18,y);y+=5;});y+=4;}
-
-  pdf.setFont('helvetica','bold');pdf.text('Unterrichtsplanung:',14,y);y+=6;
-  pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+  pdf.setFont('helvetica','bold');pdf.text('Unterrichtsplanung:',14,y);y+=6;pdf.setFont('helvetica','normal');pdf.setFontSize(9);
   planDisplay.querySelectorAll('tbody tr').forEach(row=>{
     const cells=row.querySelectorAll('td');
     if(cells.length>=2){const lines=pdf.splitTextToSize(cells[1].innerText,150);pdf.setFont('helvetica','bold');pdf.text(cells[0].innerText,14,y);pdf.setFont('helvetica','normal');pdf.text(lines,45,y);y+=lines.length*5+2;}
   });
   y+=6;pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('Beobachtungen:',14,y);y+=6;
-  pdf.setFont('helvetica','normal');pdf.setFontSize(9);
-  pdf.text(pdf.splitTextToSize(notesDisplay.value||'—',182),14,y);
-
+  pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.text(pdf.splitTextToSize(notesDisplay.value||'—',182),14,y);
   for(let i=1;i<=pdfDoc.numPages;i++){
-    const page=await pdfDoc.getPage(i);
-    const vp=page.getViewport({scale:2});
+    const page=await pdfDoc.getPage(i);const vp=page.getViewport({scale:2});
     const merged=document.createElement('canvas');merged.width=vp.width;merged.height=vp.height;
-    const mCtx=merged.getContext('2d');
-    await page.render({canvasContext:mCtx,viewport:vp}).promise;
+    const mCtx=merged.getContext('2d');await page.render({canvasContext:mCtx,viewport:vp}).promise;
     if(drawHistory[i]?.length){const annot=new Image();await new Promise(r=>{annot.onload=r;annot.src=drawHistory[i][drawHistory[i].length-1];});mCtx.drawImage(annot,0,0,vp.width/2,vp.height/2,0,0,vp.width,vp.height);}
-    const imgData=merged.toDataURL('image/jpeg',0.85);
-    const ratio=vp.width/vp.height;let pw=AW,ph=AW/ratio;if(ph>AH){ph=AH;pw=AH*ratio;}
+    const imgData=merged.toDataURL('image/jpeg',0.85);const ratio=vp.width/vp.height;let pw=AW,ph=AW/ratio;if(ph>AH){ph=AH;pw=AH*ratio;}
     pdf.addPage();pdf.addImage(imgData,'JPEG',(AW-pw)/2,(AH-ph)/2,pw,ph);
   }
-
   for(let si=0;si<sheetDocs.length;si++){
     const doc=sheetDocs[si];
     for(let p=1;p<=doc.numPages;p++){
       const page=await doc.getPage(p);const vp=page.getViewport({scale:2});
       const tc=document.createElement('canvas');tc.width=vp.width;tc.height=vp.height;
       await page.render({canvasContext:tc.getContext('2d'),viewport:vp}).promise;
-      const imgData=tc.toDataURL('image/jpeg',0.85);
-      const ratio=vp.width/vp.height;let pw=AW,ph=AW/ratio;if(ph>AH){ph=AH;pw=AH*ratio;}
+      const imgData=tc.toDataURL('image/jpeg',0.85);const ratio=vp.width/vp.height;let pw=AW,ph=AW/ratio;if(ph>AH){ph=AH;pw=AH*ratio;}
       pdf.addPage();
       if(p===1){pdf.setFont('helvetica','bold');pdf.setFontSize(7);pdf.setTextColor(150);pdf.text(`Arbeitsblatt: ${sheetsData[si].name}`,5,5);pdf.setTextColor(0);}
       pdf.addImage(imgData,'JPEG',(AW-pw)/2,(AH-ph)/2,pw,ph);
     }
   }
-
-  return { pdf, topic, dateVal, cls };
+  return {pdf, topic, dateVal, cls};
 }
 
-// ═══ EXPORT: lokal speichern ═══
-document.getElementById('exportBtn').addEventListener('click', async function() {
+// ═══════════════════════════════════════════════════
+// SUPABASE UPLOAD
+// ═══════════════════════════════════════════════════
+async function uploadToSupabase(pdfBlob, fileName) {
+  const encodedName = encodeURIComponent(fileName);
+  const url = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${encodedName}`;
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/pdf','x-upsert':'true'},
+    body: pdfBlob
+  });
+  const responseText = await res.text();
+  if(!res.ok){let msg=`HTTP ${res.status}`;try{const p=JSON.parse(responseText);msg=p.message||p.error||responseText;}catch{msg=responseText;}throw new Error(msg);}
+  return fileName;
+}
+
+// ═══════════════════════════════════════════════════
+// TOOLBAR BUTTONS
+// ═══════════════════════════════════════════════════
+document.getElementById('saveLocalBtn').addEventListener('click', async function() {
   if(!pdfDoc){showToast('Keine PDF geladen');return;}
   showToast('PDF wird erstellt ...');
   try {
     const {pdf, topic, dateVal, cls} = await buildPdf();
     const fileName = buildFileName(cls, topic, dateVal);
     pdf.save(fileName);
+    saveMetaLocal();
     showToast('Lokal gespeichert ✓');
-  } catch(e) {
-    showToast('Fehler beim Erstellen');
-    console.error(e);
-  }
+  } catch(e) { showToast('Fehler: '+e.message); }
 });
 
-// ═══ UPLOAD: nach Supabase ═══
 document.getElementById('uploadBtn').addEventListener('click', async function() {
   if(!pdfDoc){showToast('Keine PDF geladen');return;}
-
-  const btn = document.getElementById('uploadBtn');
-  btn.style.opacity = '0.5';
-  btn.style.pointerEvents = 'none';
-  showToast('Wird hochgeladen ...');
-
+  showLoading('Wird in Supabase gespeichert ...');
   try {
     const {pdf, topic, dateVal, cls} = await buildPdf();
     const fileName = buildFileName(cls, topic, dateVal);
 
-    // jsPDF → ArrayBuffer → Blob
-    const pdfArrayBuffer = pdf.output('arraybuffer');
-    const pdfBlob = new Blob([pdfArrayBuffer], {type:'application/pdf'});
+    // Haupt-PDF hochladen
+    const pdfBlob = new Blob([pdf.output('arraybuffer')], {type:'application/pdf'});
+    await uploadToSupabase(pdfBlob, fileName);
 
-    const publicUrl = await uploadToSupabase(pdfBlob, fileName);
+    // Musterlösung separat hochladen (für späteres Laden)
+    const musterFileName = `muster_${fileName}`;
+    const musterBlob = new Blob([musterData], {type:'application/pdf'});
+    await uploadToSupabase(musterBlob, musterFileName);
+
+    // Arbeitsblätter hochladen
+    const sheetPaths = [];
+    for(let si=0; si<sheetsData.length; si++){
+      const sheetFileName = `sheet_${si}_${fileName}`;
+      const sheetBlob = new Blob([sheetsData[si].data], {type:'application/pdf'});
+      await uploadToSupabase(sheetBlob, sheetFileName);
+      sheetPaths.push(sheetFileName);
+    }
+
+    saveMetaLocal(fileName, musterFileName, sheetPaths);
+    renderLibrary();
+    hideLoading();
     showToast(`☁️ Gespeichert: ${fileName}`);
-    console.log('Supabase URL:', publicUrl);
   } catch(e) {
-    const short = e.message?.slice(0,60) || 'Unbekannter Fehler';
-    showToast(`❌ ${short}`);
-    console.error('Supabase Upload Fehler:', e.message);
-  } finally {
-    btn.style.opacity = '';
-    btn.style.pointerEvents = '';
+    hideLoading();
+    showToast('❌ '+e.message.slice(0,50));
+    console.error(e);
   }
 });
 
-// ═══ RESET ═══
-document.getElementById('newBtn').addEventListener('click',()=>show('resetModal'));
-function closeModal(){hide('resetModal');}
-function doReset(){
+document.getElementById('libBtn').addEventListener('click', () => show('resetModal'));
+
+// ═══════════════════════════════════════════════════
+// BIBLIOTHEK NAVIGATION
+// ═══════════════════════════════════════════════════
+function closeModal() { hide('resetModal'); }
+
+async function saveAndGoToLibrary() {
   closeModal();
+  if(!pdfDoc){goToLibrary();return;}
+  showLoading('Wird gespeichert ...');
+  try {
+    const {pdf, topic, dateVal, cls} = await buildPdf();
+    const fileName = buildFileName(cls, topic, dateVal);
+    const pdfBlob = new Blob([pdf.output('arraybuffer')], {type:'application/pdf'});
+    await uploadToSupabase(pdfBlob, fileName);
+    const musterFileName = `muster_${fileName}`;
+    await uploadToSupabase(new Blob([musterData],{type:'application/pdf'}), musterFileName);
+    const sheetPaths = [];
+    for(let si=0;si<sheetsData.length;si++){
+      const sf=`sheet_${si}_${fileName}`;
+      await uploadToSupabase(new Blob([sheetsData[si].data],{type:'application/pdf'}),sf);
+      sheetPaths.push(sf);
+    }
+    saveMetaLocal(fileName, musterFileName, sheetPaths);
+    hideLoading();
+    showToast('Gespeichert ✓');
+  } catch(e) {
+    hideLoading();
+    saveMetaLocal(); // nur lokal
+    showToast('Lokal gespeichert (Cloud fehlgeschlagen)');
+  }
+  goToLibrary();
+}
+
+function goToLibrary() {
+  closeModal();
+  const appEl = document.getElementById('appScreen');
+  appEl.style.display='none'; appEl.classList.add('hidden');
+  hide('sheetModal');
+  resetWizardFields();
+  renderLibrary();
+  show('libraryScreen');
+}
+
+function resetWizardFields() {
   pdfDoc=null;musterData=null;musterName='';sheetsData=[];sheetDocs=[];drawHistory={};
-  drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);pdfCtx.clearRect(0,0,pdfCanvas.width,pdfCanvas.height);
-  document.getElementById('lessonTopic').value='';document.getElementById('lessonClass').value='';
+  drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  pdfCtx.clearRect(0,0,pdfCanvas.width,pdfCanvas.height);
+  document.getElementById('lessonTopic').value='';
+  document.getElementById('lessonClass').value='';
   document.getElementById('lessonDate').value=new Date().toISOString().slice(0,10);
   document.getElementById('goalsList').innerHTML=`<div class="goal-row"><div class="goal-num">1</div><input type="text" placeholder="Lernziel formulieren ..."><button class="del-goal-btn" onclick="removeGoal(this)">✕</button></div>`;
   document.getElementById('planBody').innerHTML=`
@@ -890,17 +1145,22 @@ function doReset(){
     <tr><td contenteditable="true">08:10</td><td contenteditable="true">Erarbeitung</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td></tr>
     <tr><td contenteditable="true">08:35</td><td contenteditable="true">Sicherung</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td></tr>`;
   document.getElementById('planNotes').value='';
-  document.getElementById('musterChips').innerHTML='';document.getElementById('sheetsChips').innerHTML='';
-  document.getElementById('musterInput').value='';document.getElementById('sheetsInput').value='';
+  document.getElementById('musterChips').innerHTML='';
+  document.getElementById('sheetsChips').innerHTML='';
+  document.getElementById('musterInput').value='';
+  document.getElementById('sheetsInput').value='';
   sheetsScroll.innerHTML='<span class="no-sheets">Keine Arbeitsblätter hochgeladen</span>';
-  const appEl=document.getElementById('appScreen');appEl.style.display='none';appEl.classList.add('hidden');
-  hide('sheetModal');show('dashScreen');
+  currentLessonId=null;
 }
 
-// ═══ HELPERS ═══
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
 function show(id){document.getElementById(id).classList.remove('hidden');}
 function hide(id){document.getElementById(id).classList.add('hidden');}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function showLoading(msg){document.getElementById('loadingText').textContent=msg||'Laden ...';show('loadingOverlay');}
+function hideLoading(){hide('loadingOverlay');}
 </script>
 </body>
 </html>

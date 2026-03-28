@@ -428,7 +428,8 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
       <button class="tool-btn" data-tip="Seite löschen" onclick="clearDrawings()">🗑</button>
     </div>
     <div class="tool-group">
-      <button class="tool-btn" id="exportBtn" data-tip="Als PDF exportieren">💾</button>
+      <button class="tool-btn" id="exportBtn" data-tip="Lokal speichern">💾</button>
+      <button class="tool-btn" id="uploadBtn" data-tip="In Supabase speichern">☁️</button>
       <button class="tool-btn" id="newBtn" data-tip="Neue Unterrichtseinheit">🔄</button>
     </div>
   </div>
@@ -728,12 +729,38 @@ function switchTab(tabId,btn){
   document.getElementById(tabId).classList.add('active'); btn.classList.add('active');
 }
 
-// ═══ EXPORT ═══
-document.getElementById('exportBtn').addEventListener('click', async function() {
-  if(!pdfDoc){showToast('Keine PDF geladen');return;}
-  showToast('Export wird erstellt ...');
-  saveDrawState();
+// ═══ SUPABASE CONFIG ═══
+const SUPABASE_URL = 'https://btrhkgnynlzgdobpsetd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_re06DeijESbYqjpncxk0Ug_Pqu8Rmpf';
+const BUCKET = 'unterricht';
 
+function buildFileName(cls, topic, dateVal) {
+  const clean = s => s.trim().replace(/[^a-zA-Z0-9äöüÄÖÜß\-]/g, '_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const dateStr = dateVal ? dateVal : new Date().toISOString().slice(0,10);
+  const parts = [clean(cls)||'Kurs', clean(topic)||'Thema', dateStr].join('_');
+  return `${parts}.pdf`;
+}
+
+async function uploadToSupabase(pdfBlob, fileName) {
+  const url = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${fileName}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/pdf',
+      'x-upsert': 'true'
+    },
+    body: pdfBlob
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${fileName}`;
+}
+
+async function buildPdf() {
+  saveDrawState();
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF('p','mm','a4');
   const AW=210,AH=297;
@@ -789,8 +816,51 @@ document.getElementById('exportBtn').addEventListener('click', async function() 
     }
   }
 
-  pdf.save(`Unterricht_${topic.replace(/\s+/g,'_')}_${dateStr.replace(/\./g,'-')}.pdf`);
-  showToast('PDF gespeichert ✓');
+  return { pdf, topic, dateVal, cls };
+}
+
+// ═══ EXPORT: lokal speichern ═══
+document.getElementById('exportBtn').addEventListener('click', async function() {
+  if(!pdfDoc){showToast('Keine PDF geladen');return;}
+  showToast('PDF wird erstellt ...');
+  try {
+    const {pdf, topic, dateVal, cls} = await buildPdf();
+    const fileName = buildFileName(cls, topic, dateVal);
+    pdf.save(fileName);
+    showToast('Lokal gespeichert ✓');
+  } catch(e) {
+    showToast('Fehler beim Erstellen');
+    console.error(e);
+  }
+});
+
+// ═══ UPLOAD: nach Supabase ═══
+document.getElementById('uploadBtn').addEventListener('click', async function() {
+  if(!pdfDoc){showToast('Keine PDF geladen');return;}
+
+  const btn = document.getElementById('uploadBtn');
+  btn.style.opacity = '0.5';
+  btn.style.pointerEvents = 'none';
+  showToast('Wird hochgeladen ...');
+
+  try {
+    const {pdf, topic, dateVal, cls} = await buildPdf();
+    const fileName = buildFileName(cls, topic, dateVal);
+
+    // jsPDF → ArrayBuffer → Blob
+    const pdfArrayBuffer = pdf.output('arraybuffer');
+    const pdfBlob = new Blob([pdfArrayBuffer], {type:'application/pdf'});
+
+    const publicUrl = await uploadToSupabase(pdfBlob, fileName);
+    showToast(`☁️ Gespeichert: ${fileName}`);
+    console.log('Supabase URL:', publicUrl);
+  } catch(e) {
+    showToast('Upload fehlgeschlagen – siehe Konsole');
+    console.error('Supabase Upload Fehler:', e);
+  } finally {
+    btn.style.opacity = '';
+    btn.style.pointerEvents = '';
+  }
 });
 
 // ═══ RESET ═══

@@ -742,7 +742,12 @@ function buildFileName(cls, topic, dateVal) {
 }
 
 async function uploadToSupabase(pdfBlob, fileName) {
-  const url = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${fileName}`;
+  const encodedName = encodeURIComponent(fileName);
+  const url = `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${encodedName}`;
+
+  console.log('⬆️ Upload zu:', url);
+  console.log('📦 Dateigröße:', pdfBlob.size, 'Bytes');
+
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -752,11 +757,17 @@ async function uploadToSupabase(pdfBlob, fileName) {
     },
     body: pdfBlob
   });
+
+  const responseText = await res.text();
+  console.log('📡 Status:', res.status);
+  console.log('📄 Antwort:', responseText);
+
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err);
+    let msg = `HTTP ${res.status}`;
+    try { const p = JSON.parse(responseText); msg = p.message || p.error || responseText; } catch { msg = responseText; }
+    throw new Error(msg);
   }
-  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${fileName}`;
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${encodedName}`;
 }
 
 async function buildPdf() {
@@ -855,8 +866,9 @@ document.getElementById('uploadBtn').addEventListener('click', async function() 
     showToast(`☁️ Gespeichert: ${fileName}`);
     console.log('Supabase URL:', publicUrl);
   } catch(e) {
-    showToast('Upload fehlgeschlagen – siehe Konsole');
-    console.error('Supabase Upload Fehler:', e);
+    const short = e.message?.slice(0,60) || 'Unbekannter Fehler';
+    showToast(`❌ ${short}`);
+    console.error('Supabase Upload Fehler:', e.message);
   } finally {
     btn.style.opacity = '';
     btn.style.pointerEvents = '';

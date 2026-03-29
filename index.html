@@ -2,7 +2,15 @@
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool-18</title>
+<title>Unterrichts-Tool</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Unterricht">
+<link rel="apple-touch-icon" href="icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -519,7 +527,7 @@ const sheetsScroll = document.getElementById('sheetsScroll');
 // ═══════════════════════════════════════════════════
 // PASSWORT SCHUTZ
 // ═══════════════════════════════════════════════════
-const CORRECT_PW = 'Unterricht';
+const CORRECT_PW = 'Unterricht15349001!';
 const SESSION_KEY = 'ut_auth';
 
 function checkAuth() {
@@ -1207,6 +1215,15 @@ function hide(id){document.getElementById(id).classList.add('hidden');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function showLoading(msg){document.getElementById('loadingText').textContent=msg||'Laden ...';show('loadingOverlay');}
 function hideLoading(){hide('loadingOverlay');}
+
+// ═══════════════════════════════════════════════════
+// SERVICE WORKER REGISTRIERUNG
+// ═══════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

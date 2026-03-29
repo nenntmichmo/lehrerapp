@@ -248,7 +248,7 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
           <span>🔍</span>
           <input type="text" id="searchInput" placeholder="Suchen nach Thema, Kurs ...">
         </div>
-        <button class="btn-new-lesson" onclick="startNewLesson()">＋ Neue Stunde</button>
+        <button class="btn-new-lesson" id="newLessonBtn">＋ Neue Stunde</button>
       </div>
     </div>
 
@@ -298,8 +298,8 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
       <button class="btn-secondary" onclick="addGoal()">＋ Lernziel hinzufügen</button>
     </div>
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:28px;">
-      <button class="btn-secondary" onclick="show('libraryScreen'); hide('dashScreen')">← Bibliothek</button>
-      <button class="btn-primary" style="margin-top:0;" onclick="goToStep2()">Weiter zu den Materialien →</button>
+      <button class="btn-secondary" id="backToLibBtn">← Bibliothek</button>
+      <button class="btn-primary" style="margin-top:0;" id="goStep2Btn">Weiter zu den Materialien →</button>
     </div>
   </div>
 </div>
@@ -334,8 +334,8 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
     </div>
     <div class="file-chips" id="sheetsChips"></div>
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:28px;">
-      <button class="btn-secondary" onclick="show('dashScreen'); hide('pdfScreen')">← Zurück</button>
-      <button class="btn-primary" style="margin-top:0;" onclick="goToStep3()">Weiter zur Planung →</button>
+      <button class="btn-secondary" id="backToDashBtn">← Zurück</button>
+      <button class="btn-primary" style="margin-top:0;" id="goStep3Btn">Weiter zur Planung →</button>
     </div>
   </div>
 </div>
@@ -367,8 +367,8 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
     <label class="field-label">Beobachtungen / Notizen</label>
     <textarea class="field" id="planNotes" placeholder="Notizen zur Klasse, Besonderheiten ..."></textarea>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="btn-secondary" onclick="show('pdfScreen'); hide('planScreen')">← Zurück</button>
-      <button class="btn-primary" style="margin-top:0;" onclick="startLesson()">Unterricht starten →</button>
+      <button class="btn-secondary" id="backToPdfBtn">← Zurück</button>
+      <button class="btn-primary" style="margin-top:0;" id="startLessonBtn">Unterricht starten →</button>
     </div>
   </div>
 </div>
@@ -457,10 +457,10 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
     <h3>Zur Bibliothek?</h3>
     <p>Nicht gespeicherte Änderungen gehen verloren. Möchtest du vorher speichern?</p>
     <div class="modal-btns" style="flex-direction:column; gap:8px;">
-      <button class="btn-primary" style="margin-top:0; justify-content:center;" onclick="saveAndGoToLibrary()">☁️ Speichern & zur Bibliothek</button>
+      <button class="btn-primary" style="margin-top:0; justify-content:center;" id="saveAndLibBtn">☁️ Speichern & zur Bibliothek</button>
       <div style="display:flex; gap:8px; justify-content:center;">
-        <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
-        <button class="btn-danger" onclick="goToLibrary()">Ohne Speichern</button>
+        <button class="btn-cancel" id="cancelLibBtn">Abbrechen</button>
+        <button class="btn-danger" id="goLibBtn">Ohne Speichern</button>
       </div>
     </div>
   </div>
@@ -472,8 +472,8 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
     <h3>Stunde löschen?</h3>
     <p id="deleteModalText">Diese Stunde wird aus der Bibliothek entfernt.</p>
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeDeleteModal()">Abbrechen</button>
-      <button class="btn-danger" onclick="confirmDelete()">Löschen</button>
+      <button class="btn-cancel" id="cancelDeleteBtn">Abbrechen</button>
+      <button class="btn-danger" id="confirmDeleteBtn">Löschen</button>
     </div>
   </div>
 </div>
@@ -532,6 +532,30 @@ window.onload = () => {
   document.getElementById('lessonDate').value = new Date().toISOString().slice(0,10);
   renderLibrary();
   document.getElementById('searchInput').addEventListener('input', renderLibrary);
+  document.getElementById('newLessonBtn').addEventListener('click', startNewLesson);
+
+  // Wizard navigation
+  const $ = id => document.getElementById(id);
+  $('backToLibBtn')?.addEventListener('click', () => { show('libraryScreen'); hide('dashScreen'); });
+  $('goStep2Btn')?.addEventListener('click', goToStep2);
+  $('backToDashBtn')?.addEventListener('click', () => { show('dashScreen'); hide('pdfScreen'); });
+  $('goStep3Btn')?.addEventListener('click', goToStep3);
+  $('backToPdfBtn')?.addEventListener('click', () => { show('pdfScreen'); hide('planScreen'); });
+  $('startLessonBtn')?.addEventListener('click', startLesson);
+
+  // Modal buttons
+  $('saveAndLibBtn')?.addEventListener('click', saveAndGoToLibrary);
+  $('cancelLibBtn')?.addEventListener('click', closeModal);
+  $('goLibBtn')?.addEventListener('click', goToLibrary);
+  $('cancelDeleteBtn')?.addEventListener('click', closeDeleteModal);
+  $('confirmDeleteBtn')?.addEventListener('click', confirmDelete);
+
+  // App toolbar
+  $('saveLocalBtn')?.addEventListener('click', handleSaveLocal);
+  $('uploadBtn')?.addEventListener('click', handleUpload);
+  $('libBtn')?.addEventListener('click', () => show('resetModal'));
+  $('prevBtn')?.addEventListener('click', () => { if(pageNum>1){saveDrawState();pageNum--;renderPage(pageNum);} });
+  $('nextBtn')?.addEventListener('click', () => { if(pdfDoc&&pageNum<pdfDoc.numPages){saveDrawState();pageNum++;renderPage(pageNum);} });
 };
 
 // ═══════════════════════════════════════════════════
@@ -888,8 +912,7 @@ async function renderPage(num) {
   document.getElementById('prevBtn').style.opacity = num===1?'0.3':'1';
   document.getElementById('nextBtn').style.opacity = num===pdfDoc.numPages?'0.3':'1';
 }
-document.getElementById('prevBtn').addEventListener('click',()=>{ if(pageNum>1){saveDrawState();pageNum--;renderPage(pageNum);} });
-document.getElementById('nextBtn').addEventListener('click',()=>{ if(pdfDoc&&pageNum<pdfDoc.numPages){saveDrawState();pageNum++;renderPage(pageNum);} });
+
 
 // ═══════════════════════════════════════════════════
 // SHEETS
@@ -1039,7 +1062,7 @@ async function uploadToSupabase(pdfBlob, fileName) {
 // ═══════════════════════════════════════════════════
 // TOOLBAR BUTTONS
 // ═══════════════════════════════════════════════════
-document.getElementById('saveLocalBtn').addEventListener('click', async function() {
+async function handleSaveLocal() {
   if(!pdfDoc){showToast('Keine PDF geladen');return;}
   showToast('PDF wird erstellt ...');
   try {
@@ -1049,9 +1072,9 @@ document.getElementById('saveLocalBtn').addEventListener('click', async function
     saveMetaLocal();
     showToast('Lokal gespeichert ✓');
   } catch(e) { showToast('Fehler: '+e.message); }
-});
+}
 
-document.getElementById('uploadBtn').addEventListener('click', async function() {
+async function handleUpload() {
   if(!pdfDoc){showToast('Keine PDF geladen');return;}
   showLoading('Wird in Supabase gespeichert ...');
   try {
@@ -1085,9 +1108,7 @@ document.getElementById('uploadBtn').addEventListener('click', async function() 
     showToast('❌ '+e.message.slice(0,50));
     console.error(e);
   }
-});
-
-document.getElementById('libBtn').addEventListener('click', () => show('resetModal'));
+}
 
 // ═══════════════════════════════════════════════════
 // BIBLIOTHEK NAVIGATION

@@ -25,43 +25,6 @@ body { font-family: var(--font-body); background: var(--paper); color: var(--ink
 .screen { position: absolute; inset: 0; overflow-y: auto; }
 .hidden { display: none !important; }
 
-/* ── PASSWORD SCREEN ── */
-#passwordScreen {
-  position: fixed; inset: 0; background: var(--ink);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 9999;
-}
-.pw-card {
-  background: white; border-radius: 20px; padding: 48px 52px;
-  width: min(420px, 90vw); text-align: center;
-  box-shadow: 0 8px 48px rgba(0,0,0,0.3);
-}
-.pw-icon { font-size: 2.8rem; margin-bottom: 16px; display: block; }
-.pw-title { font-family: var(--font-head); font-size: 2rem; color: var(--ink); margin-bottom: 6px; }
-.pw-sub { color: #aaa; font-size: 0.9rem; margin-bottom: 32px; }
-.pw-input-wrap { position: relative; margin-bottom: 16px; }
-.pw-input-wrap input {
-  width: 100%; border: 2px solid var(--border); border-radius: 10px;
-  padding: 13px 48px 13px 16px; font-family: var(--font-body);
-  font-size: 1rem; outline: none; transition: border-color 0.15s;
-  letter-spacing: 0.1em;
-}
-.pw-input-wrap input:focus { border-color: var(--ink); }
-.pw-toggle {
-  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #aaa;
-}
-.pw-btn {
-  width: 100%; background: var(--ink); color: white; border: none;
-  border-radius: 10px; padding: 14px; font-family: var(--font-body);
-  font-size: 1rem; font-weight: 600; cursor: pointer;
-  transition: background 0.18s, transform 0.12s;
-}
-.pw-btn:hover { background: var(--accent); transform: translateY(-1px); }
-.pw-error {
-  color: var(--accent); font-size: 0.85rem; margin-top: 10px;
-  min-height: 20px; font-weight: 500;
-}
 
 /* ── LIBRARY ── */
 .lib-wrap { min-height: 100vh; padding: 40px 24px 60px; max-width: 900px; margin: 0 auto; }
@@ -255,21 +218,6 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 </style>
 </head>
 <body>
-
-<!-- PASSWORT -->
-<div id="passwordScreen">
-  <div class="pw-card">
-    <span class="pw-icon">🔐</span>
-    <div class="pw-title">Unterrichts-Tool</div>
-    <div class="pw-sub">Bitte Passwort eingeben um fortzufahren</div>
-    <div class="pw-input-wrap">
-      <input type="password" id="pwInput" placeholder="Passwort ..." autocomplete="current-password">
-      <button class="pw-toggle" id="pwToggle">👁</button>
-    </div>
-    <button class="pw-btn" id="pwBtn">Anmelden</button>
-    <div class="pw-error" id="pwError"></div>
-  </div>
-</div>
 
 <!-- BIBLIOTHEK -->
 <div id="libraryScreen" class="screen">
@@ -569,6 +517,52 @@ let isPanning = false, panStartX = 0, panStartY = 0;
 let currentSupabaseId = null;
 let pendingDeleteId = null;
 let allLessons = [];
+let openYears = new Set();
+let openClasses = new Set();
+
+// ═══════════════════════════════════════════════════
+// SCHULJAHRE
+// ═══════════════════════════════════════════════════
+const YEARS_KEY = 'ut_schuljahre';
+
+function getYears() {
+  try { return JSON.parse(localStorage.getItem(YEARS_KEY) || '[]'); } catch { return []; }
+}
+function saveYears(years) {
+  localStorage.setItem(YEARS_KEY, JSON.stringify(years));
+}
+function addYear(name) {
+  const years = getYears();
+  if (!years.includes(name)) {
+    years.push(name);
+    years.sort((a,b) => b.localeCompare(a));
+    saveYears(years);
+  }
+  updateYearDropdowns();
+}
+function updateYearDropdowns() {
+  const select = document.getElementById('lessonYear');
+  if (!select) return;
+  const current = select.value;
+  const years = getYears();
+  select.innerHTML = '<option value="">Schuljahr wählen ...</option>';
+  years.forEach(y => {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    if (y === current) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+function toggleYear(year) {
+  if (openYears.has(year)) openYears.delete(year);
+  else openYears.add(year);
+  renderLibrary(allLessons);
+}
+function toggleClass(key) {
+  if (openClasses.has(key)) openClasses.delete(key);
+  else openClasses.add(key);
+  renderLibrary(allLessons);
+}
 
 // ═══════════════════════════════════════════════════
 // ELEMENTS
@@ -587,44 +581,6 @@ const sheetsScroll = document.getElementById('sheetsScroll');
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
-// ═══════════════════════════════════════════════════
-// PASSWORT SCHUTZ
-// ═══════════════════════════════════════════════════
-const CORRECT_PW = 'Unterricht15349001!';
-const SESSION_KEY = 'ut_auth';
-
-function checkAuth() {
-  return sessionStorage.getItem(SESSION_KEY) === 'ok';
-}
-
-function initPasswordScreen() {
-  const pwInput = document.getElementById('pwInput');
-  const pwBtn = document.getElementById('pwBtn');
-  const pwToggle = document.getElementById('pwToggle');
-  const pwError = document.getElementById('pwError');
-
-  function tryLogin() {
-    if (pwInput.value === CORRECT_PW) {
-      sessionStorage.setItem(SESSION_KEY, 'ok');
-      document.getElementById('passwordScreen').style.display = 'none';
-      initApp();
-    } else {
-      pwError.textContent = 'Falsches Passwort – bitte nochmal versuchen';
-      pwInput.value = '';
-      pwInput.focus();
-      setTimeout(() => pwError.textContent = '', 3000);
-    }
-  }
-
-  pwBtn.addEventListener('click', tryLogin);
-  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
-  pwToggle.addEventListener('click', () => {
-    pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
-    pwToggle.textContent = pwInput.type === 'password' ? '👁' : '🙈';
-  });
-  pwInput.focus();
-}
-
 function initApp() {
   document.getElementById('lessonDate').value = new Date().toISOString().slice(0,10);
   loadLibrary();
@@ -666,11 +622,7 @@ function initApp() {
 }
 
 window.onload = () => {
-  initPasswordScreen();
-  if (checkAuth()) {
-    document.getElementById('passwordScreen').style.display = 'none';
-    initApp();
-  }
+  initApp();
 };
 
 
@@ -768,6 +720,7 @@ async function dbDelete(id) {
 async function loadLibrary() {
   try {
     allLessons = await dbGetAll();
+    allLessons.forEach(l => { if (l.schuljahr) addYear(l.schuljahr); });
     renderLibrary(allLessons);
   } catch(e) {
     console.error('Bibliothek:', e);
@@ -777,34 +730,111 @@ async function loadLibrary() {
 
 function filterLibrary() {
   const q = document.getElementById('searchInput').value.toLowerCase();
-  renderLibrary(q ? allLessons.filter(l => (l.topic||'').toLowerCase().includes(q)||(l.klasse||'').toLowerCase().includes(q)) : allLessons);
+  const filtered = q
+    ? allLessons.filter(l =>
+        (l.topic||'').toLowerCase().includes(q) ||
+        (l.klasse||'').toLowerCase().includes(q) ||
+        (l.schuljahr||'').toLowerCase().includes(q))
+    : allLessons;
+  renderLibrary(filtered);
 }
 
 function renderLibrary(lessons) {
   const grid = document.getElementById('libGrid');
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const years = getYears();
+
   document.getElementById('libSectionTitle').textContent =
     lessons.length ? `${lessons.length} Stunde${lessons.length!==1?'n':''} gespeichert` : 'Gespeicherte Stunden';
 
-  if (!lessons.length) {
-    grid.innerHTML = `<div class="lib-empty"><span class="lib-empty-icon">📚</span><div>Noch keine Stunden gespeichert.<br>Erstelle deine erste Unterrichtsstunde!</div></div>`;
+  // Flache Suche
+  if (q) {
+    if (!lessons.length) {
+      grid.innerHTML = `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">🔍</span><div>Keine Stunden gefunden.</div></div>`;
+      return;
+    }
+    grid.innerHTML = `<div class="lessons-grid" style="grid-column:1/-1">${lessons.map(l => lessonCardHtml(l)).join('')}</div>`;
     return;
   }
 
-  grid.innerHTML = lessons.map(l => {
-    const dateStr = l.datum ? new Date(l.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'}) : '—';
-    const goals = (l.ziele||[]).slice(0,3).map(g=>`<span class="lesson-card-goal-tag">${g}</span>`).join('');
-    const safeId = l.id;
-    const safeTopic = (l.topic||'').replace(/"/g,'&quot;');
-    return `
-      <div class="lesson-card" onclick="loadLesson('${safeId}')">
-        <button class="lesson-card-del" data-id="${safeId}" data-topic="${safeTopic}" onclick="event.stopPropagation();askDelete(this.dataset.id,this.dataset.topic)">✕</button>
-        <div class="lesson-card-kurs">${l.klasse||'Kein Kurs'}</div>
-        <div class="lesson-card-topic">${l.topic||'Kein Thema'}</div>
-        <div class="lesson-card-date">📅 ${dateStr}</div>
-        ${goals?`<div class="lesson-card-goals">${goals}</div>`:''}
-        <div class="lesson-card-footer"><span class="lesson-card-badge">☁️ Cloud</span></div>
+  // Hierarchisch: Schuljahr → Klasse → Stunden
+  if (!years.length && !lessons.length) {
+    grid.innerHTML = `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">📚</span><div>Noch keine Stunden gespeichert.<br>Lege zuerst ein Schuljahr an!</div></div>`;
+    return;
+  }
+
+  let html = '';
+
+  years.forEach(year => {
+    const yearLessons = lessons.filter(l => (l.schuljahr||'') === year);
+    const isOpen = openYears.has(year);
+    const classes = [...new Set(yearLessons.map(l => l.klasse||'Ohne Klasse'))].sort();
+
+    html += `<div class="year-folder" style="grid-column:1/-1;">
+      <div class="year-header" onclick="toggleYear('${year}')">
+        <span class="folder-icon">${isOpen?'📂':'📁'}</span>
+        <span class="folder-name">${year}</span>
+        <span class="folder-count">${yearLessons.length} Stunde${yearLessons.length!==1?'n':''}</span>
+        <span class="folder-arrow">${isOpen?'▲':'▼'}</span>
       </div>`;
-  }).join('');
+
+    if (isOpen) {
+      html += `<div class="year-content">`;
+      if (!classes.length) {
+        html += `<div style="padding:16px;color:#aaa;font-size:0.88rem;">Noch keine Stunden in diesem Schuljahr.</div>`;
+      }
+      classes.forEach(cls => {
+        const clsKey = `${year}__${cls}`;
+        const clsLessons = yearLessons.filter(l => (l.klasse||'Ohne Klasse') === cls);
+        const isClsOpen = openClasses.has(clsKey);
+
+        html += `<div class="class-folder">
+          <div class="class-header" onclick="toggleClass('${clsKey}')">
+            <span class="folder-icon">${isClsOpen?'📂':'📁'}</span>
+            <span class="folder-name">${cls}</span>
+            <span class="folder-count">${clsLessons.length} Stunde${clsLessons.length!==1?'n':''}</span>
+            <span class="folder-arrow">${isClsOpen?'▲':'▼'}</span>
+          </div>`;
+
+        if (isClsOpen) {
+          html += `<div class="class-content"><div class="lessons-grid">${clsLessons.map(l => lessonCardHtml(l)).join('')}</div></div>`;
+        }
+        html += `</div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+
+  // Stunden ohne Schuljahr
+  const noYear = lessons.filter(l => !l.schuljahr);
+  if (noYear.length) {
+    const isOpen = openYears.has('__noyear__');
+    html += `<div class="year-folder" style="grid-column:1/-1;">
+      <div class="year-header" onclick="toggleYear('__noyear__')">
+        <span class="folder-icon">${isOpen?'📂':'📁'}</span>
+        <span class="folder-name">Ohne Schuljahr</span>
+        <span class="folder-count">${noYear.length} Stunde${noYear.length!==1?'n':''}</span>
+        <span class="folder-arrow">${isOpen?'▲':'▼'}</span>
+      </div>
+      ${isOpen?`<div class="year-content"><div class="lessons-grid">${noYear.map(l=>lessonCardHtml(l)).join('')}</div></div>`:''}
+    </div>`;
+  }
+
+  grid.innerHTML = html || `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">📚</span><div>Noch keine Stunden gespeichert.</div></div>`;
+}
+
+function lessonCardHtml(l) {
+  const dateStr = l.datum ? new Date(l.datum).toLocaleDateString('de-DE',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+  const goals = (l.ziele||[]).slice(0,2).map(g=>`<span class="lesson-card-goal-tag">${g}</span>`).join('');
+  const safeTopic = (l.topic||'').replace(/"/g,'&quot;');
+  return `<div class="lesson-card" onclick="loadLesson('${l.id}')">
+    <button class="lesson-card-del" data-id="${l.id}" data-topic="${safeTopic}" onclick="event.stopPropagation();askDelete(this.dataset.id,this.dataset.topic)">✕</button>
+    <div class="lesson-card-topic">${l.topic||'Kein Thema'}</div>
+    <div class="lesson-card-date">📅 ${dateStr}</div>
+    ${goals?`<div class="lesson-card-goals">${goals}</div>`:''}
+    <div class="lesson-card-footer"><span class="lesson-card-badge">☁️ Cloud</span></div>
+  </div>`;
 }
 
 // ═══════════════════════════════════════════════════

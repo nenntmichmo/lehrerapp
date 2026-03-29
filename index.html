@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool-15</title>
+<title>Unterrichts-Tool-16</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1007,7 +1007,13 @@ async function handleSaveLocal() {
       const page=await pdfDoc.getPage(i);const vp=page.getViewport({scale:2});
       const merged=document.createElement('canvas');merged.width=vp.width;merged.height=vp.height;
       const mCtx=merged.getContext('2d');await page.render({canvasContext:mCtx,viewport:vp}).promise;
-      if(drawHistory[i]?.length){const annot=new Image();await new Promise(r=>{annot.onload=r;annot.src=drawHistory[i][drawHistory[i].length-1];});mCtx.drawImage(annot,0,0,vp.width/2,vp.height/2,0,0,vp.width,vp.height);}
+      if(drawHistory[i]?.length){
+        const annot=new Image();
+        await new Promise(r=>{annot.onload=r;annot.src=drawHistory[i][drawHistory[i].length-1];});
+        // Annotation wurde bei Anzeigeskalierung gezeichnet (annot.width x annot.height)
+        // Wir skalieren sie auf die volle Export-Canvas-Größe
+        mCtx.drawImage(annot, 0, 0, annot.width, annot.height, 0, 0, vp.width, vp.height);
+      }
       const imgData=merged.toDataURL('image/jpeg',0.85);const ratio=vp.width/vp.height;let pw=AW,ph=AW/ratio;if(ph>AH){ph=AH;pw=AH*ratio;}
       pdf.addPage();pdf.addImage(imgData,'JPEG',(AW-pw)/2,(AH-ph)/2,pw,ph);
     }

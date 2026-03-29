@@ -386,6 +386,7 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
     </div>
     <div class="tool-group">
       <button class="tool-btn" id="saveLocalBtn" data-tip="Lokal als PDF speichern">💾</button>
+      <button class="tool-btn" id="driveBtn" data-tip="In Google Drive speichern">▲</button>
       <button class="tool-btn" id="uploadBtn" data-tip="In Cloud speichern">☁️</button>
       <button class="tool-btn" id="libBtn" data-tip="Zur Bibliothek">📚</button>
     </div>
@@ -464,6 +465,8 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- Firebase SDKs (compat mode) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -481,6 +484,12 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "694677505627",
   appId: "1:694677505627:web:6737ea2b28ca579f25e17e"
 };
+
+// Google Drive
+const GOOGLE_CLIENT_ID = '694677505627-8vh13a2t7u9olff1qcj1erjt6q9862o8.apps.googleusercontent.com';
+const GOOGLE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+let googleTokenClient = null;
+let googleAccessToken = null;
 
 const SUPABASE_URL = 'https://btrhkgnynlzgdobpsetd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0cmhrZ255bmx6Z2RvYnBzZXRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MTg2NDAsImV4cCI6MjA5MDI5NDY0MH0.ixUCXBgH17cusMQEU0IbCPgkHCHUrT67VUlPyd_-UtA';
@@ -574,6 +583,7 @@ function initApp() {
   document.getElementById('backToPdfBtn').addEventListener('click', () => { hide('planScreen'); show('pdfScreen'); });
   document.getElementById('startLessonBtn').addEventListener('click', startLesson);
   document.getElementById('saveLocalBtn').addEventListener('click', handleSaveLocal);
+  document.getElementById('driveBtn').addEventListener('click', handleDriveUpload);
   document.getElementById('uploadBtn').addEventListener('click', handleUpload);
   document.getElementById('libBtn').addEventListener('click', () => show('libModal'));
   document.getElementById('prevBtn').addEventListener('click', () => { if(pageNum>1){saveDrawState();pageNum--;renderPage(pageNum);} });
@@ -1094,6 +1104,48 @@ async function saveToCloud() {
 // ═══════════════════════════════════════════════════
 // BUTTONS
 // ═══════════════════════════════════════════════════
+async function buildExportPdfBlob() {
+  saveDrawState();
+  const {jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');const AW=210,AH=297;
+  const meta=collectMeta();
+  const dateStr=meta.datum?new Date(meta.datum).toLocaleDateString('de-DE'):'—';
+  pdf.setFont('helvetica','bold');pdf.setFontSize(18);pdf.text('Unterrichtseinheit',14,20);
+  pdf.setFontSize(10);pdf.setFont('helvetica','normal');
+  pdf.text(`Thema: ${meta.topic}`,14,30);pdf.text(`Datum: ${dateStr}`,14,36);
+  if(meta.klasse)pdf.text(`Klasse: ${meta.klasse}`,14,42);
+  let y=meta.klasse?50:44;
+  if(meta.ziele.length){pdf.setFont('helvetica','bold');pdf.text('Lernziele:',14,y);y+=6;pdf.setFont('helvetica','normal');meta.ziele.forEach((g,i)=>{pdf.text(`${i+1}. ${g}`,18,y);y+=5;});y+=4;}
+  pdf.setFont('helvetica','bold');pdf.text('Unterrichtsplanung:',14,y);y+=6;pdf.setFont('helvetica','normal');pdf.setFontSize(9);
+  meta.planung.forEach(r=>{const lines=pdf.splitTextToSize(r.inhalt,150);pdf.setFont('helvetica','bold');pdf.text(r.zeit,14,y);pdf.setFont('helvetica','normal');pdf.text(lines,45,y);y+=lines.length*5+2;});
+  y+=6;pdf.setFont('helvetica','bold');pdf.setFontSize(10);pdf.text('Beobachtungen:',14,y);y+=6;
+  pdf.setFont('helvetica','normal');pdf.setFontSize(9);pdf.text(pdf.splitTextToSize(meta.notizen||'—',182),14,y);
+  for(let i=1;i<=pdfDoc.numPages;i++){
+    const page=await pdfDoc.getPage(i);const vp=page.getViewport({scale:2});
+    const merged=document.createElement('canvas');merged.width=vp.width;merged.height=vp.height;
+    const mCtx=merged.getContext('2d');await page.render({canvasContext:mCtx,viewport:vp}).promise;
+    if(drawHistory[i]?.length){
+      const annot=new Image();
+      await new Promise(r=>{annot.onload=r;annot.src=drawHistory[i][drawHistory[i].length-1];});
+      mCtx.drawImage(annot, 0, 0, annot.width, annot.height, 0, 0, vp.width, vp.height);
+    }
+    const imgData=merged.toDataURL('image/jpeg',0.85);const ratio=vp.width/vp.height;let pw=AW,ph=AW/ratio;if(ph>AH){ph=AH;pw=AH*ratio;}
+    pdf.addPage();pdf.addImage(imgData,'JPEG',(AW-pw)/2,(AH-ph)/2,pw,ph);
+  }
+  for(let si=0;si<sheetDocs.length;si++){
+    const doc=sheetDocs[si];
+    for(let p=1;p<=doc.numPages;p++){
+      const page=await doc.getPage(p);const vp=page.getViewport({scale:2});
+      const tc=document.createElement('canvas');tc.width=vp.width;tc.height=vp.height;
+      await page.render({canvasContext:tc.getContext('2d'),viewport:vp}).promise;
+      const imgData=tc.toDataURL('image/jpeg',0.85);const ratio=vp.width/vp.height;let pw=AW,ph=AW/ratio;if(ph>AH){ph=AH;pw=AH*ratio;}
+      pdf.addPage();
+      if(p===1){pdf.setFont('helvetica','bold');pdf.setFontSize(7);pdf.setTextColor(150);pdf.text(`Arbeitsblatt: ${sheetsData[si].name}`,5,5);pdf.setTextColor(0);}
+      pdf.addImage(imgData,'JPEG',(AW-pw)/2,(AH-ph)/2,pw,ph);
+    }
+  }
+  return { pdf, meta };
+}
+
 async function handleSaveLocal() {
   if(!pdfDoc){showToast('Keine PDF geladen');return;}
   showToast('PDF wird erstellt ...');
@@ -1215,6 +1267,97 @@ function hide(id){document.getElementById(id).classList.add('hidden');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function showLoading(msg){document.getElementById('loadingText').textContent=msg||'Laden ...';show('loadingOverlay');}
 function hideLoading(){hide('loadingOverlay');}
+
+// ═══════════════════════════════════════════════════
+// GOOGLE DRIVE
+// ═══════════════════════════════════════════════════
+function initGoogleDrive() {
+  return new Promise((resolve) => {
+    googleTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: GOOGLE_SCOPE,
+      callback: (response) => {
+        if (response.access_token) {
+          googleAccessToken = response.access_token;
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      }
+    });
+    resolve(true);
+  });
+}
+
+async function uploadToDrive(pdfBlob, fileName) {
+  // Token anfordern falls nicht vorhanden
+  if (!googleAccessToken) {
+    await new Promise((resolve) => {
+      googleTokenClient.requestAccessToken();
+      // Warte auf Token via callback
+      const check = setInterval(() => {
+        if (googleAccessToken) { clearInterval(check); resolve(); }
+      }, 200);
+      setTimeout(() => { clearInterval(check); resolve(); }, 30000);
+    });
+  }
+
+  if (!googleAccessToken) throw new Error('Google Anmeldung fehlgeschlagen');
+
+  // Datei zu Google Drive hochladen
+  const metadata = {
+    name: fileName,
+    mimeType: 'application/pdf'
+  };
+
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+  form.append('file', pdfBlob, fileName);
+
+  const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${googleAccessToken}` },
+    body: form
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    // Token abgelaufen – neu anfordern
+    if (res.status === 401) {
+      googleAccessToken = null;
+      throw new Error('Token abgelaufen – bitte nochmal versuchen');
+    }
+    throw new Error(err.error?.message || 'Drive Upload fehlgeschlagen');
+  }
+
+  return await res.json();
+}
+
+async function handleDriveUpload() {
+  if (!pdfDoc) { showToast('Keine PDF geladen'); return; }
+  showLoading('Google Drive wird vorbereitet ...');
+  try {
+    await initGoogleDrive();
+
+    showLoading('PDF wird erstellt ...');
+    const meta = collectMeta();
+    const {pdf} = await buildExportPdfBlob();
+    const cls = (meta.klasse||'Kurs').replace(/[^a-zA-Z0-9]/g,'_');
+    const top = (meta.topic||'Thema').replace(/[^a-zA-Z0-9]/g,'_');
+    const fileName = `${cls}_${top}_${meta.datum||'datum'}.pdf`;
+
+    const pdfBlob = new Blob([pdf.output('arraybuffer')], {type:'application/pdf'});
+
+    showLoading('Wird in Google Drive hochgeladen ...');
+    const result = await uploadToDrive(pdfBlob, fileName);
+    hideLoading();
+    showToast(`✅ In Google Drive gespeichert: ${result.name}`);
+  } catch(e) {
+    hideLoading();
+    showToast('❌ ' + e.message.slice(0, 50));
+    console.error(e);
+  }
+}
 
 // ═══════════════════════════════════════════════════
 // SERVICE WORKER REGISTRIERUNG

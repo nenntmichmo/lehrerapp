@@ -1,8 +1,8 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool-1</title>
+<title>Unterrichts-Tool-2</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -630,7 +630,7 @@ function renderLibrary() {
       `<span class="lesson-card-goal-tag">${g}</span>`).join('');
 
     return `<div class="lesson-card" onclick="loadLesson('${lesson.id}')">
-      <button class="lesson-card-del" onclick="event.stopPropagation(); askDeleteLesson('${lesson.id}', '${(lesson.topic||'').replace(/'/g,'\\'')}')">✕</button>
+      <button class="lesson-card-del" data-id="${lesson.id}" data-topic="${(lesson.topic||'').replace(/"/g,'&quot;')}" onclick="event.stopPropagation(); askDeleteLesson(this.dataset.id, this.dataset.topic)">✕</button>
       <div class="lesson-card-kurs">${lesson.cls || 'Kein Kurs'}</div>
       <div class="lesson-card-topic">${lesson.topic || 'Kein Thema'}</div>
       <div class="lesson-card-date">📅 ${dateStr}</div>

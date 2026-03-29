@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool-7</title>
+<title>Unterrichts-Tool-8</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -426,7 +426,7 @@ const DB_HEADERS = {
 // ═══════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════
-let musterData = null, musterName = '';
+let musterData = null, musterName = '', musterFile = null;
 let sheetsData = [];
 let pdfDoc = null, pageNum = 1;
 let drawHistory = {};
@@ -712,6 +712,7 @@ function removeGoal(btn) {
 
 function handleMuster(input) {
   const file = input.files[0]; if (!file) return;
+  musterFile = file; // store original File for upload
   const reader = new FileReader();
   reader.onload = e => {
     musterData = new Uint8Array(e.target.result); musterName = file.name;
@@ -721,12 +722,15 @@ function handleMuster(input) {
   };
   reader.readAsArrayBuffer(file);
 }
-function removeMuster() { musterData=null; musterName=''; document.getElementById('musterChips').innerHTML=''; document.getElementById('musterInput').value=''; }
+function removeMuster() { musterData=null; musterName=''; musterFile=null; document.getElementById('musterChips').innerHTML=''; document.getElementById('musterInput').value=''; }
 
 function handleSheets(input) {
   Array.from(input.files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = e => { sheetsData.push({name:file.name, data:new Uint8Array(e.target.result)}); renderSheetChips(); };
+    reader.onload = e => { 
+      sheetsData.push({name:file.name, data:new Uint8Array(e.target.result), file:file}); 
+      renderSheetChips(); 
+    };
     reader.readAsArrayBuffer(file);
   });
 }
@@ -905,17 +909,21 @@ async function saveToCloud() {
   const meta = collectMeta();
   const ts = Date.now();
 
-  // Musterlösung hochladen
+  // Musterlösung hochladen – File-Objekt bevorzugen, sonst Blob aus Uint8Array
   showLoading('Musterlösung wird hochgeladen ...');
-  const musterBlob = new Blob([musterData], {type:'application/pdf'});
-  const musterUrl = await uploadToCloudinary(musterBlob, `muster_${ts}.pdf`);
+  const musterUpload = musterFile instanceof File 
+    ? musterFile 
+    : new Blob([musterData], {type:'application/pdf'});
+  const musterUrl = await uploadToCloudinary(musterUpload, `muster_${ts}.pdf`);
 
   // Arbeitsblätter hochladen
   const sheetUrls = [];
   for (let i=0; i<sheetsData.length; i++) {
     showLoading(`Arbeitsblatt ${i+1}/${sheetsData.length} wird hochgeladen ...`);
-    const blob = new Blob([sheetsData[i].data], {type:'application/pdf'});
-    const url = await uploadToCloudinary(blob, `sheet_${i}_${ts}.pdf`);
+    const sheetUpload = sheetsData[i].file instanceof File
+      ? sheetsData[i].file
+      : new Blob([sheetsData[i].data], {type:'application/pdf'});
+    const url = await uploadToCloudinary(sheetUpload, `sheet_${i}_${ts}.pdf`);
     sheetUrls.push({ name: sheetsData[i].name, url });
   }
 
@@ -1021,7 +1029,7 @@ function goToLibrary() {
 // RESET
 // ═══════════════════════════════════════════════════
 function resetFields() {
-  pdfDoc=null;musterData=null;musterName='';sheetsData=[];sheetDocs=[];drawHistory={};
+  pdfDoc=null;musterData=null;musterName='';musterFile=null;sheetsData=[];sheetDocs=[];drawHistory={};
   drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
   pdfCtx.clearRect(0,0,pdfCanvas.width,pdfCanvas.height);
   document.getElementById('lessonTopic').value='';

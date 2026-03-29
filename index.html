@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool-2</title>
+<title>Unterrichts-Tool-3</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -696,24 +696,27 @@ async function loadLesson(id) {
       // Musterlösung von Supabase laden
       const musterPath = lesson.cloudMusterPath;
       if (musterPath) {
-        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(musterPath)}`, {
-          headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
-        });
+        const musterUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(musterPath)}`;
+        console.log('Loading muster from:', musterUrl);
+        const res = await fetch(musterUrl);
+        console.log('Muster response status:', res.status, 'size:', res.headers.get('content-length'));
         if (res.ok) {
           const buf = await res.arrayBuffer();
+          console.log('Muster buffer size:', buf.byteLength);
+          if (buf.byteLength === 0) throw new Error('Musterlösung ist leer (0 bytes) – möglicherweise falscher Pfad');
           musterData = new Uint8Array(buf);
           musterName = musterPath;
           document.getElementById('musterChips').innerHTML = `<div class="file-chip">☁️ ${musterPath}<button class="chip-remove" onclick="removeMuster()">✕</button></div>`;
+        } else {
+          throw new Error(`Musterlösung nicht gefunden (HTTP ${res.status})`);
         }
       }
       // Arbeitsblätter laden
       for (const sheetPath of (lesson.cloudSheetPaths || [])) {
-        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(sheetPath)}`, {
-          headers: { 'Authorization': `Bearer ${SUPABASE_KEY}` }
-        });
+        const res = await fetch(`${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(sheetPath)}`);
         if (res.ok) {
           const buf = await res.arrayBuffer();
-          sheetsData.push({ name: sheetPath, data: new Uint8Array(buf) });
+          if (buf.byteLength > 0) sheetsData.push({ name: sheetPath, data: new Uint8Array(buf) });
         }
       }
       renderSheetChips();
@@ -1087,14 +1090,14 @@ async function handleUpload() {
 
     // Musterlösung separat hochladen (für späteres Laden)
     const musterFileName = `muster_${fileName}`;
-    const musterBlob = new Blob([musterData], {type:'application/pdf'});
+    const musterBlob = new Blob([musterData.buffer], {type:'application/pdf'});
     await uploadToSupabase(musterBlob, musterFileName);
 
     // Arbeitsblätter hochladen
     const sheetPaths = [];
     for(let si=0; si<sheetsData.length; si++){
       const sheetFileName = `sheet_${si}_${fileName}`;
-      const sheetBlob = new Blob([sheetsData[si].data], {type:'application/pdf'});
+      const sheetBlob = new Blob([sheetsData[si].data.buffer], {type:'application/pdf'});
       await uploadToSupabase(sheetBlob, sheetFileName);
       sheetPaths.push(sheetFileName);
     }
@@ -1125,11 +1128,11 @@ async function saveAndGoToLibrary() {
     const pdfBlob = new Blob([pdf.output('arraybuffer')], {type:'application/pdf'});
     await uploadToSupabase(pdfBlob, fileName);
     const musterFileName = `muster_${fileName}`;
-    await uploadToSupabase(new Blob([musterData],{type:'application/pdf'}), musterFileName);
+    await uploadToSupabase(new Blob([musterData.buffer],{type:'application/pdf'}), musterFileName);
     const sheetPaths = [];
     for(let si=0;si<sheetsData.length;si++){
       const sf=`sheet_${si}_${fileName}`;
-      await uploadToSupabase(new Blob([sheetsData[si].data],{type:'application/pdf'}),sf);
+      await uploadToSupabase(new Blob([sheetsData[si].data.buffer],{type:'application/pdf'}),sf);
       sheetPaths.push(sf);
     }
     saveMetaLocal(fileName, musterFileName, sheetPaths);

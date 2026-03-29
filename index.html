@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool-12</title>
+<title>Unterrichts-Tool-13</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -499,13 +499,25 @@ function initFirebase() {
 
 async function uploadToFirebase(file, filename) {
   initFirebase();
-  const ref = firebaseStorage.ref().child(`unterricht/${filename}`);
-  const snapshot = await ref.put(file);
-  const url = await snapshot.ref.getDownloadURL();
-  return url;
+  const path = `unterricht/${filename}`;
+  const ref = firebaseStorage.ref().child(path);
+  await ref.put(file);
+  return path; // Pfad speichern, nicht die URL
 }
 
-async function fetchPdfFromFirebase(url) {
+async function getFirebaseUrl(path) {
+  initFirebase();
+  const ref = firebaseStorage.ref().child(path);
+  return await ref.getDownloadURL(); // frische URL bei jedem Abruf
+}
+
+async function fetchPdfFromFirebase(pathOrUrl) {
+  initFirebase();
+  let url = pathOrUrl;
+  // Wenn es ein Pfad ist (kein http), frische URL generieren
+  if (!pathOrUrl.startsWith('http')) {
+    url = await getFirebaseUrl(pathOrUrl);
+  }
   const res = await fetch(url);
   if (!res.ok) throw new Error(`PDF konnte nicht geladen werden (${res.status})`);
   const buf = await res.arrayBuffer();

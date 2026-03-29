@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool-11</title>
+<title>Unterrichts-Tool-12</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -404,14 +404,22 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Firebase SDKs (compat mode) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script>
 // ═══════════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════════
-const CLOUDINARY_CLOUD = 'dzatrrlye';
-const CLOUDINARY_PRESET = 'unterricht';
-const CLOUDINARY_UPLOAD = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/raw/upload`;
-const CLOUDINARY_BASE   = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/raw/upload`;
+// Firebase config
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD0zLYlJR929s9sz4GkTN505NbJQirPGNY",
+  authDomain: "unterrichts-tool.firebaseapp.com",
+  projectId: "unterrichts-tool",
+  storageBucket: "unterrichts-tool.firebasestorage.app",
+  messagingSenderId: "694677505627",
+  appId: "1:694677505627:web:6737ea2b28ca579f25e17e"
+};
 
 const SUPABASE_URL = 'https://btrhkgnynlzgdobpsetd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0cmhrZ255bmx6Z2RvYnBzZXRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MTg2NDAsImV4cCI6MjA5MDI5NDY0MH0.ixUCXBgH17cusMQEU0IbCPgkHCHUrT67VUlPyd_-UtA';
@@ -479,31 +487,25 @@ window.onload = () => {
 };
 
 // ═══════════════════════════════════════════════════
-// CLOUDINARY UPLOAD
-// Lädt eine PDF-Datei (als Blob/File) zu Cloudinary hoch
-// und gibt die öffentliche URL zurück.
+// FIREBASE STORAGE
 // ═══════════════════════════════════════════════════
-async function uploadToCloudinary(blob, filename) {
-  const fd = new FormData();
-  fd.append('file', blob, filename);
-  fd.append('upload_preset', CLOUDINARY_PRESET);
+let firebaseApp, firebaseStorage;
 
-  const res = await fetch(CLOUDINARY_UPLOAD, { method: 'POST', body: fd });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error('Cloudinary: ' + err);
-  }
-  const data = await res.json();
-  console.log('Cloudinary upload result:', data.secure_url, 'type:', data.type, 'access_mode:', data.access_mode);
-  // Baue die URL manuell mit /raw/upload/ um sicherzugehen
-  const publicId = data.public_id;
-  const version = data.version;
-  const url = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/raw/upload/v${version}/${publicId}`;
+function initFirebase() {
+  if (firebaseApp) return; // already initialized
+  firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+  firebaseStorage = firebase.storage();
+}
+
+async function uploadToFirebase(file, filename) {
+  initFirebase();
+  const ref = firebaseStorage.ref().child(`unterricht/${filename}`);
+  const snapshot = await ref.put(file);
+  const url = await snapshot.ref.getDownloadURL();
   return url;
 }
 
-// PDF von Cloudinary laden → Uint8Array
-async function fetchPdfFromCloudinary(url) {
+async function fetchPdfFromFirebase(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`PDF konnte nicht geladen werden (${res.status})`);
   const buf = await res.arrayBuffer();
@@ -596,7 +598,7 @@ function renderLibrary(lessons) {
 }
 
 // ═══════════════════════════════════════════════════
-// STUNDE LADEN – PDFs direkt von Cloudinary
+// STUNDE LADEN – PDFs von Firebase Storage
 // ═══════════════════════════════════════════════════
 async function loadLesson(id) {
   showLoading('Stunde wird geladen ...');
@@ -627,24 +629,24 @@ async function loadLesson(id) {
       row.innerHTML = `<td contenteditable="true">${r.zeit||''}</td><td contenteditable="true">${r.inhalt||''}</td><td><button class="del-row-btn" onclick="deleteRow(this)">✕</button></td>`;
     });
 
-    // Musterlösung von Cloudinary laden
+    // Musterlösung von Firebase laden
     musterData = null; musterName = '';
     document.getElementById('musterChips').innerHTML = '';
     if (lesson.muster_url) {
       showLoading('Musterlösung wird geladen ...');
-      musterData = await fetchPdfFromCloudinary(lesson.muster_url);
+      musterData = await fetchPdfFromFirebase(lesson.muster_url);
       musterName = 'Musterlösung';
       document.getElementById('musterChips').innerHTML =
         `<div class="file-chip">☁️ Musterlösung<button class="chip-remove" onclick="removeMuster()">✕</button></div>`;
     }
 
-    // Arbeitsblätter von Cloudinary laden
+    // Arbeitsblätter von Firebase laden
     sheetsData = [];
     document.getElementById('sheetsChips').innerHTML = '';
     const sheetUrls = lesson.sheet_urls || [];
     for (let i = 0; i < sheetUrls.length; i++) {
       showLoading(`Arbeitsblatt ${i+1}/${sheetUrls.length} wird geladen ...`);
-      const data = await fetchPdfFromCloudinary(sheetUrls[i].url);
+      const data = await fetchPdfFromFirebase(sheetUrls[i].url);
       sheetsData.push({ name: sheetUrls[i].name, data });
     }
     if (sheetsData.length) renderSheetChips();
@@ -906,18 +908,18 @@ function collectMeta() {
 
 // ═══════════════════════════════════════════════════
 // IN CLOUD SPEICHERN
-// PDFs → Cloudinary, Metadaten → Supabase
+// PDFs → Firebase Storage, Metadaten → Supabase
 // ═══════════════════════════════════════════════════
 async function saveToCloud() {
   const meta = collectMeta();
   const ts = Date.now();
 
-  // Musterlösung hochladen – File-Objekt bevorzugen, sonst Blob aus Uint8Array
+  // Musterlösung hochladen
   showLoading('Musterlösung wird hochgeladen ...');
-  const musterUpload = musterFile instanceof File 
-    ? musterFile 
+  const musterUpload = musterFile instanceof File
+    ? musterFile
     : new Blob([musterData], {type:'application/pdf'});
-  const musterUrl = await uploadToCloudinary(musterUpload, `muster_${ts}.pdf`);
+  const musterUrl = await uploadToFirebase(musterUpload, `muster_${ts}.pdf`);
 
   // Arbeitsblätter hochladen
   const sheetUrls = [];
@@ -926,7 +928,7 @@ async function saveToCloud() {
     const sheetUpload = sheetsData[i].file instanceof File
       ? sheetsData[i].file
       : new Blob([sheetsData[i].data], {type:'application/pdf'});
-    const url = await uploadToCloudinary(sheetUpload, `sheet_${i}_${ts}.pdf`);
+    const url = await uploadToFirebase(sheetUpload, `sheet_${i}_${ts}.pdf`);
     sheetUrls.push({ name: sheetsData[i].name, url });
   }
 

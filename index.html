@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool-13</title>
+<title>Unterrichts-Tool14</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -497,6 +497,14 @@ function initFirebase() {
   firebaseStorage = firebase.storage();
 }
 
+// Zuverlässige Konvertierung Uint8Array → Blob
+function uint8ToBlob(uint8, type='application/pdf') {
+  // Chunk-weise kopieren um Transfer-Probleme zu vermeiden
+  const copy = new Uint8Array(uint8.length);
+  copy.set(uint8);
+  return new Blob([copy], {type});
+}
+
 async function uploadToFirebase(file, filename) {
   initFirebase();
   const path = `unterricht/${filename}`;
@@ -930,8 +938,8 @@ async function saveToCloud() {
   showLoading('Musterlösung wird hochgeladen ...');
   const musterUpload = musterFile instanceof File
     ? musterFile
-    : new Blob([musterData], {type:'application/pdf'});
-  const musterUrl = await uploadToFirebase(musterUpload, `muster_${ts}.pdf`);
+    : uint8ToBlob(musterData);
+  const musterPath = await uploadToFirebase(musterUpload, `muster_${ts}.pdf`);
 
   // Arbeitsblätter hochladen
   const sheetUrls = [];
@@ -939,14 +947,14 @@ async function saveToCloud() {
     showLoading(`Arbeitsblatt ${i+1}/${sheetsData.length} wird hochgeladen ...`);
     const sheetUpload = sheetsData[i].file instanceof File
       ? sheetsData[i].file
-      : new Blob([sheetsData[i].data], {type:'application/pdf'});
-    const url = await uploadToFirebase(sheetUpload, `sheet_${i}_${ts}.pdf`);
-    sheetUrls.push({ name: sheetsData[i].name, url });
+      : uint8ToBlob(sheetsData[i].data);
+    const sheetPath = await uploadToFirebase(sheetUpload, `sheet_${i}_${ts}.pdf`);
+    sheetUrls.push({ name: sheetsData[i].name, url: sheetPath });
   }
 
   // Metadaten in Supabase speichern
   showLoading('Wird gespeichert ...');
-  const payload = { ...meta, muster_url: musterUrl, sheet_urls: sheetUrls };
+  const payload = { ...meta, muster_url: musterPath, sheet_urls: sheetUrls };
 
   if (currentSupabaseId) {
     await dbUpdate(currentSupabaseId, payload);

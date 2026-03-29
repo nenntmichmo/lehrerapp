@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool-16</title>
+<title>Unterrichts-Tool-18</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -16,6 +16,44 @@
 body { font-family: var(--font-body); background: var(--paper); color: var(--ink); overflow: hidden; height: 100vh; width: 100vw; }
 .screen { position: absolute; inset: 0; overflow-y: auto; }
 .hidden { display: none !important; }
+
+/* ── PASSWORD SCREEN ── */
+#passwordScreen {
+  position: fixed; inset: 0; background: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.pw-card {
+  background: white; border-radius: 20px; padding: 48px 52px;
+  width: min(420px, 90vw); text-align: center;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.3);
+}
+.pw-icon { font-size: 2.8rem; margin-bottom: 16px; display: block; }
+.pw-title { font-family: var(--font-head); font-size: 2rem; color: var(--ink); margin-bottom: 6px; }
+.pw-sub { color: #aaa; font-size: 0.9rem; margin-bottom: 32px; }
+.pw-input-wrap { position: relative; margin-bottom: 16px; }
+.pw-input-wrap input {
+  width: 100%; border: 2px solid var(--border); border-radius: 10px;
+  padding: 13px 48px 13px 16px; font-family: var(--font-body);
+  font-size: 1rem; outline: none; transition: border-color 0.15s;
+  letter-spacing: 0.1em;
+}
+.pw-input-wrap input:focus { border-color: var(--ink); }
+.pw-toggle {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; font-size: 1.1rem; color: #aaa;
+}
+.pw-btn {
+  width: 100%; background: var(--ink); color: white; border: none;
+  border-radius: 10px; padding: 14px; font-family: var(--font-body);
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: background 0.18s, transform 0.12s;
+}
+.pw-btn:hover { background: var(--accent); transform: translateY(-1px); }
+.pw-error {
+  color: var(--accent); font-size: 0.85rem; margin-top: 10px;
+  min-height: 20px; font-weight: 500;
+}
 
 /* ── LIBRARY ── */
 .lib-wrap { min-height: 100vh; padding: 40px 24px 60px; max-width: 900px; margin: 0 auto; }
@@ -171,6 +209,21 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 </style>
 </head>
 <body>
+
+<!-- PASSWORT -->
+<div id="passwordScreen">
+  <div class="pw-card">
+    <span class="pw-icon">🔐</span>
+    <div class="pw-title">Unterrichts-Tool</div>
+    <div class="pw-sub">Bitte Passwort eingeben um fortzufahren</div>
+    <div class="pw-input-wrap">
+      <input type="password" id="pwInput" placeholder="Passwort ..." autocomplete="current-password">
+      <button class="pw-toggle" id="pwToggle">👁</button>
+    </div>
+    <button class="pw-btn" id="pwBtn">Anmelden</button>
+    <div class="pw-error" id="pwError"></div>
+  </div>
+</div>
 
 <!-- BIBLIOTHEK -->
 <div id="libraryScreen" class="screen">
@@ -463,7 +516,45 @@ const sheetsScroll = document.getElementById('sheetsScroll');
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
-window.onload = () => {
+// ═══════════════════════════════════════════════════
+// PASSWORT SCHUTZ
+// ═══════════════════════════════════════════════════
+const CORRECT_PW = 'Unterricht15349001!';
+const SESSION_KEY = 'ut_auth';
+
+function checkAuth() {
+  return sessionStorage.getItem(SESSION_KEY) === 'ok';
+}
+
+function initPasswordScreen() {
+  const pwInput = document.getElementById('pwInput');
+  const pwBtn = document.getElementById('pwBtn');
+  const pwToggle = document.getElementById('pwToggle');
+  const pwError = document.getElementById('pwError');
+
+  function tryLogin() {
+    if (pwInput.value === CORRECT_PW) {
+      sessionStorage.setItem(SESSION_KEY, 'ok');
+      document.getElementById('passwordScreen').style.display = 'none';
+      initApp();
+    } else {
+      pwError.textContent = 'Falsches Passwort – bitte nochmal versuchen';
+      pwInput.value = '';
+      pwInput.focus();
+      setTimeout(() => pwError.textContent = '', 3000);
+    }
+  }
+
+  pwBtn.addEventListener('click', tryLogin);
+  pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+  pwToggle.addEventListener('click', () => {
+    pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+    pwToggle.textContent = pwInput.type === 'password' ? '👁' : '🙈';
+  });
+  pwInput.focus();
+}
+
+function initApp() {
   document.getElementById('lessonDate').value = new Date().toISOString().slice(0,10);
   loadLibrary();
   document.getElementById('searchInput').addEventListener('input', filterLibrary);
@@ -484,7 +575,17 @@ window.onload = () => {
   document.getElementById('goLibBtn').addEventListener('click', goToLibrary);
   document.getElementById('cancelDeleteBtn').addEventListener('click', () => { hide('deleteModal'); pendingDeleteId=null; });
   document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+}
+
+window.onload = () => {
+  initPasswordScreen();
+  if (checkAuth()) {
+    document.getElementById('passwordScreen').style.display = 'none';
+    initApp();
+  }
 };
+
+
 
 // ═══════════════════════════════════════════════════
 // FIREBASE STORAGE

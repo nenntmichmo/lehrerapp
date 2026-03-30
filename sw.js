@@ -1,4 +1,4 @@
-// Service Worker deaktiviert - alle Requests direkt ans Netzwerk
+// Service Worker deaktiviert
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => {
   event.waitUntil(
@@ -6,6 +6,7 @@ self.addEventListener('activate', event => {
   );
   self.clients.claim();
 });
+// Alle Requests direkt ans Netzwerk - kein Caching
 self.addEventListener('fetch', event => {
-  event.respondWith(fetch(event.request));
+  event.respondWith(fetch(event.request).catch(() => new Response('', {status: 408})));
 });

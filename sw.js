@@ -1,31 +1,36 @@
-const CACHE_NAME = 'unterrichts-tool-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  'https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
-  'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js'
-];
+const CACHE_NAME = 'unterrichts-tool-v3';
 
+// Beim Installieren alten Cache löschen
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).catch(() => {})
-  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
+// Nur GET-Requests cachen, POST/PATCH/DELETE immer direkt zum Netzwerk
 self.addEventListener('fetch', event => {
+  // Firebase, Firestore und alle API-Calls immer direkt - nie cachen
+  const url = event.request.url;
+  if (
+    event.request.method !== 'GET' ||
+    url.includes('firestore.googleapis.com') ||
+    url.includes('firebase') ||
+    url.includes('googleapis.com') ||
+    url.includes('cloudinary') ||
+    url.includes('supabase')
+  ) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Statische Assets cachen
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );

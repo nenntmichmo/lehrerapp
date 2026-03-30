@@ -533,15 +533,37 @@ let navYear = null;
 let navClass = null;
 
 // ═══════════════════════════════════════════════════
-// SCHULJAHRE
+// SCHULJAHRE & KLASSEN
 // ═══════════════════════════════════════════════════
 const YEARS_KEY = 'ut_schuljahre';
+const CLASSES_KEY = 'ut_klassen';
 
 function getYears() {
   try { return JSON.parse(localStorage.getItem(YEARS_KEY) || '[]'); } catch { return []; }
 }
 function saveYears(years) {
   localStorage.setItem(YEARS_KEY, JSON.stringify(years));
+}
+function getClasses(year) {
+  try {
+    const all = JSON.parse(localStorage.getItem(CLASSES_KEY) || '{}');
+    return all[year] || [];
+  } catch { return []; }
+}
+function saveClass(year, cls) {
+  try {
+    const all = JSON.parse(localStorage.getItem(CLASSES_KEY) || '{}');
+    if (!all[year]) all[year] = [];
+    if (!all[year].includes(cls)) { all[year].push(cls); all[year].sort(); }
+    localStorage.setItem(CLASSES_KEY, JSON.stringify(all));
+  } catch {}
+}
+function deleteClass(year, cls) {
+  try {
+    const all = JSON.parse(localStorage.getItem(CLASSES_KEY) || '{}');
+    if (all[year]) all[year] = all[year].filter(c => c !== cls);
+    localStorage.setItem(CLASSES_KEY, JSON.stringify(all));
+  } catch {}
 }
 function addYear(name) {
   const years = getYears();
@@ -565,14 +587,69 @@ function updateYearDropdowns() {
     select.appendChild(opt);
   });
 }
-function toggleYear(year) {
-  if (openYears.has(year)) openYears.delete(year);
-  else openYears.add(year);
+
+// ─── Navigation ──────────────────────────────────
+function navToYears() {
+  navLevel = 'years'; navYear = null; navClass = null;
+  updateBreadcrumb();
   renderLibrary(allLessons);
 }
-function toggleClass(key) {
-  if (openClasses.has(key)) openClasses.delete(key);
-  else openClasses.add(key);
+function navToClasses(year) {
+  navLevel = 'classes'; navYear = year; navClass = null;
+  updateBreadcrumb();
+  renderLibrary(allLessons);
+}
+function navToLessons(year, cls) {
+  navLevel = 'lessons'; navYear = year; navClass = cls;
+  updateBreadcrumb();
+  renderLibrary(allLessons);
+}
+
+function updateBreadcrumb() {
+  const bc       = document.getElementById('breadcrumb');
+  const bcYear   = document.getElementById('bcYear');
+  const bcClass  = document.getElementById('bcClass');
+  const bcSep1   = document.getElementById('bcSep1');
+  const bcSep2   = document.getElementById('bcSep2');
+  const newYearBtn  = document.getElementById('newYearBtn');
+  const newClassBtn = document.getElementById('newClassBtn');
+  const newLessonBtn = document.getElementById('newLessonBtn');
+
+  if (navLevel === 'years') {
+    bc.style.display = 'none';
+    newYearBtn.style.display = 'flex';
+    newClassBtn.style.display = 'none';
+    newLessonBtn.style.display = 'none';
+  } else if (navLevel === 'classes') {
+    bc.style.display = 'flex';
+    bcYear.textContent = `📁 ${navYear}`;
+    bcYear.style.display = 'inline'; bcSep1.style.display = 'inline';
+    bcClass.style.display = 'none'; bcSep2.style.display = 'none';
+    newYearBtn.style.display = 'none';
+    newClassBtn.style.display = 'flex';
+    newLessonBtn.style.display = 'none';
+  } else {
+    bc.style.display = 'flex';
+    bcYear.textContent = `📁 ${navYear}`;
+    bcYear.style.display = 'inline'; bcSep1.style.display = 'inline';
+    bcClass.textContent = `📁 ${navClass}`;
+    bcClass.style.display = 'inline'; bcSep2.style.display = 'inline';
+    newYearBtn.style.display = 'none';
+    newClassBtn.style.display = 'none';
+    newLessonBtn.style.display = 'flex';
+  }
+}
+
+function deleteYear(year) {
+  if (!confirm(`Schuljahr "${year}" wirklich löschen? (Stunden bleiben erhalten)`)) return;
+  const years = getYears().filter(y => y !== year);
+  saveYears(years);
+  updateYearDropdowns();
+  renderLibrary(allLessons);
+}
+function deleteClassFolder(year, cls) {
+  if (!confirm(`Klasse "${cls}" aus "${year}" wirklich löschen? (Stunden bleiben erhalten)`)) return;
+  deleteClass(year, cls);
   renderLibrary(allLessons);
 }
 
@@ -870,19 +947,6 @@ function lessonCardHtml(l) {
   </div>`;
 }
 
-function deleteYear(year) {
-  if (!confirm(`Schuljahr "${year}" wirklich löschen? (Stunden bleiben erhalten)`)) return;
-  const years = getYears().filter(y => y !== year);
-  saveYears(years);
-  updateYearDropdowns();
-  renderLibrary(allLessons);
-}
-
-function deleteClassFolder(year, cls) {
-  if (!confirm(`Klasse "${cls}" aus "${year}" wirklich löschen? (Stunden bleiben erhalten)`)) return;
-  deleteClass(year, cls);
-  renderLibrary(allLessons);
-}
 
 // ═══════════════════════════════════════════════════
 // STUNDE LADEN – PDFs von Firebase Storage

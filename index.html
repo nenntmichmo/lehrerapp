@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Unterrichts-Tool</title>
+<title>Unterrichts-Tool-1</title>
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
@@ -1554,12 +1554,10 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 function showLoading(msg){document.getElementById('loadingText').textContent=msg||'Laden ...';show('loadingOverlay');}
 function hideLoading(){hide('loadingOverlay');}
 
-// ═══════════════════════════════════════════════════
-// SERVICE WORKER REGISTRIERUNG
-// ═══════════════════════════════════════════════════
+// Service Worker deregistrieren falls vorhanden
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister());
   });
 }
 </script>

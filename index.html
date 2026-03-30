@@ -27,68 +27,62 @@ body { font-family: var(--font-body); background: var(--paper); color: var(--ink
 
 
 /* ── LIBRARY ── */
-.lib-wrap { min-height: 100vh; padding: 40px 24px 60px; max-width: 900px; margin: 0 auto; }
-.lib-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 36px; flex-wrap: wrap; gap: 16px; }
+.lib-wrap { min-height: 100vh; padding: 40px 24px 60px; max-width: 1100px; margin: 0 auto; }
+.lib-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 16px; }
 .lib-title { font-family: var(--font-head); font-size: 2.4rem; color: var(--ink); line-height: 1.1; }
 .lib-title span { color: var(--accent); }
 .lib-subtitle { color: #aaa; font-size: 0.9rem; margin-top: 4px; }
 .lib-search { display: flex; align-items: center; gap: 10px; background: white; border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 14px; width: 240px; }
 .lib-search input { border: none; outline: none; font-family: var(--font-body); font-size: 0.92rem; flex: 1; background: none; }
-.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.lesson-card { background: white; border-radius: 14px; padding: 22px 24px; box-shadow: var(--shadow); cursor: pointer; border: 2px solid transparent; transition: border-color 0.18s, transform 0.15s, box-shadow 0.15s; position: relative; }
-.lesson-card:hover { border-color: var(--accent2); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.12); }
-.lesson-card-kurs { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent2); margin-bottom: 6px; }
-.lesson-card-topic { font-family: var(--font-head); font-size: 1.2rem; color: var(--ink); margin-bottom: 10px; line-height: 1.2; }
-.lesson-card-date { font-size: 0.82rem; color: #aaa; margin-bottom: 12px; }
-.lesson-card-goals { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px; }
-.lesson-card-goal-tag { background: var(--plan-bg); border: 1px solid #bbd6f5; border-radius: 99px; padding: 2px 10px; font-size: 0.75rem; color: var(--ink); }
-.lesson-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
-.lesson-card-badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 99px; font-weight: 600; background: #e8f9ee; color: var(--green); }
-.lesson-card-del { background: none; border: none; cursor: pointer; color: #ddd; font-size: 1rem; padding: 4px 8px; border-radius: 6px; transition: color 0.15s, background 0.15s; position: absolute; top: 14px; right: 14px; }
-.lesson-card-del:hover { color: var(--accent); background: #fff0f0; }
-.lib-empty { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #bbb; }
-.lib-empty-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+.lib-section-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #bbb; margin-bottom: 18px; }
+.lib-empty { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: #bbb; }
+.lib-empty-icon { font-size: 3.5rem; display: block; margin-bottom: 16px; }
 .btn-new-lesson { background: var(--ink); color: white; border: none; border-radius: 10px; padding: 12px 24px; font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.18s, transform 0.12s; white-space: nowrap; }
 .btn-new-lesson:hover { background: var(--accent); transform: translateY(-1px); }
-.lib-section-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #bbb; margin-bottom: 14px; }
 
-/* ── FOLDER STRUCTURE ── */
-.year-folder { background: white; border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 12px; }
-.year-header {
-  display: flex; align-items: center; gap: 12px; padding: 18px 22px;
-  cursor: pointer; transition: background 0.15s; user-select: none;
+/* BREADCRUMB */
+.breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.bc-item { font-size: 0.9rem; color: #888; cursor: pointer; padding: 4px 10px; border-radius: 6px; transition: background 0.15s, color 0.15s; }
+.bc-item:hover { background: white; color: var(--ink); }
+.bc-active { color: var(--ink); font-weight: 600; cursor: default; }
+.bc-active:hover { background: none; }
+.bc-sep { color: #ccc; font-size: 0.9rem; }
+
+/* FOLDER ICONS – Ebene 1 & 2 */
+.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; }
+.folder-icon-card {
+  display: flex; flex-direction: column; align-items: center;
+  cursor: pointer; padding: 20px 12px 16px; border-radius: 14px;
+  border: 2px solid transparent; transition: border-color 0.18s, transform 0.15s, background 0.15s;
+  position: relative; user-select: none;
 }
-.year-header:hover { background: #f7f5f1; }
-.folder-icon { font-size: 1.3rem; }
-.folder-name { font-family: var(--font-head); font-size: 1.2rem; color: var(--ink); flex: 1; }
-.folder-count { font-size: 0.78rem; color: #aaa; font-weight: 500; }
-.folder-arrow { color: #ccc; font-size: 0.8rem; margin-left: 4px; }
-
-.year-content { padding: 0 16px 16px; }
-
-.class-folder { background: #f7f5f1; border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
-.class-header {
-  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
-  cursor: pointer; transition: background 0.15s; user-select: none;
+.folder-icon-card:hover { border-color: var(--accent2); transform: translateY(-3px); background: white; }
+.folder-emoji { font-size: 3.5rem; margin-bottom: 10px; line-height: 1; }
+.folder-label { font-size: 0.88rem; font-weight: 600; color: var(--ink); text-align: center; word-break: break-word; }
+.folder-sublabel { font-size: 0.72rem; color: #aaa; margin-top: 3px; text-align: center; }
+.folder-del {
+  position: absolute; top: 6px; right: 6px;
+  background: none; border: none; cursor: pointer; color: transparent;
+  font-size: 0.8rem; padding: 2px 5px; border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
 }
-.class-header:hover { background: #eee; }
-.class-header .folder-name { font-family: var(--font-body); font-size: 1rem; font-weight: 600; }
-.class-content { padding: 8px 12px 12px; }
+.folder-icon-card:hover .folder-del { color: #ccc; }
+.folder-del:hover { color: var(--accent) !important; background: #fff0f0; }
 
-.lessons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-
-/* Smaller lesson cards inside folders */
-.lesson-card { background: white; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 8px rgba(0,0,0,0.07); cursor: pointer; border: 2px solid transparent; transition: border-color 0.18s, transform 0.15s; position: relative; }
+/* LESSON CARDS – Ebene 3 */
+.lessons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.lesson-card { background: white; border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); cursor: pointer; border: 2px solid transparent; transition: border-color 0.18s, transform 0.15s; position: relative; }
 .lesson-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
-.lesson-card-kurs { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent2); margin-bottom: 4px; }
-.lesson-card-topic { font-family: var(--font-head); font-size: 1rem; color: var(--ink); margin-bottom: 6px; line-height: 1.2; }
+.lesson-card-topic { font-family: var(--font-head); font-size: 1.05rem; color: var(--ink); margin-bottom: 6px; line-height: 1.2; padding-right: 24px; }
 .lesson-card-date { font-size: 0.78rem; color: #aaa; margin-bottom: 8px; }
 .lesson-card-goals { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 .lesson-card-goal-tag { background: var(--plan-bg); border: 1px solid #bbd6f5; border-radius: 99px; padding: 1px 8px; font-size: 0.72rem; color: var(--ink); }
-.lesson-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.lesson-card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
 .lesson-card-badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 99px; font-weight: 600; background: #e8f9ee; color: var(--green); }
 .lesson-card-del { background: none; border: none; cursor: pointer; color: #ddd; font-size: 0.9rem; padding: 3px 6px; border-radius: 5px; transition: color 0.15s, background 0.15s; position: absolute; top: 10px; right: 10px; }
 .lesson-card-del:hover { color: var(--accent); background: #fff0f0; }
+
+
 
 /* ── WIZARD ── */
 .wizard-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px 16px 60px; }
@@ -222,6 +216,8 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 <!-- BIBLIOTHEK -->
 <div id="libraryScreen" class="screen">
   <div class="lib-wrap">
+
+    <!-- HEADER -->
     <div class="lib-header">
       <div>
         <div class="lib-title">Unterrichts<span>-Tool</span></div>
@@ -229,14 +225,27 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
       </div>
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <div class="lib-search"><span>🔍</span><input type="text" id="searchInput" placeholder="Thema, Kurs suchen ..."></div>
-        <button class="btn-new-lesson" id="newYearBtn" style="background:#2980b9;">＋ Schuljahr</button>
-        <button class="btn-new-lesson" id="newLessonBtn">＋ Neue Stunde</button>
+        <button class="btn-new-lesson" id="newYearBtn" style="background:var(--accent2);">＋ Schuljahr</button>
+        <button class="btn-new-lesson" id="newClassBtn" style="display:none;">＋ Klasse</button>
+        <button class="btn-new-lesson" id="newLessonBtn" style="display:none;">＋ Neue Stunde</button>
       </div>
     </div>
-    <div class="lib-section-title" id="libSectionTitle">Gespeicherte Stunden</div>
-    <div class="lib-grid" id="libGrid">
-      <div class="lib-empty"><span class="lib-empty-icon">📚</span><div>Noch keine Stunden gespeichert.</div></div>
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb" id="breadcrumb" style="display:none;">
+      <span class="bc-item bc-home" id="bcHome">🏠 Startseite</span>
+      <span class="bc-sep" id="bcSep1" style="display:none;">›</span>
+      <span class="bc-item" id="bcYear" style="display:none;"></span>
+      <span class="bc-sep" id="bcSep2" style="display:none;">›</span>
+      <span class="bc-item bc-active" id="bcClass" style="display:none;"></span>
     </div>
+
+    <!-- GRID -->
+    <div class="lib-section-title" id="libSectionTitle"></div>
+    <div class="lib-grid" id="libGrid">
+      <div class="lib-empty"><span class="lib-empty-icon">📚</span><div>Noch keine Schuljahre angelegt.<br>Klicke auf "＋ Schuljahr" um zu beginnen!</div></div>
+    </div>
+
   </div>
 </div>
 
@@ -602,8 +611,11 @@ function initApp() {
   document.getElementById('goLibBtn').addEventListener('click', goToLibrary);
   document.getElementById('cancelDeleteBtn').addEventListener('click', () => { hide('deleteModal'); pendingDeleteId=null; });
   document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+  // Schuljahr Modal
   document.getElementById('newYearBtn').addEventListener('click', () => {
     document.getElementById('yearInput').value = '';
+    document.getElementById('yearModal').querySelector('h3').textContent = 'Neues Schuljahr';
+    document.getElementById('yearModal').querySelector('p').textContent = 'Gib den Namen des Schuljahres ein';
     show('yearModal');
     setTimeout(() => document.getElementById('yearInput').focus(), 100);
   });
@@ -613,12 +625,48 @@ function initApp() {
     if (!name) { showToast('Bitte einen Namen eingeben'); return; }
     addYear(name);
     hide('yearModal');
-    showToast(`Schuljahr "${name}" angelegt ✓`);
+    renderLibrary(allLessons);
+    showToast(`"${name}" angelegt ✓`);
   });
-  document.getElementById('yearInput')?.addEventListener('keydown', e => {
+  document.getElementById('yearInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('confirmYearBtn').click();
   });
+
+  // Klasse Modal
+  document.getElementById('newClassBtn').addEventListener('click', () => {
+    document.getElementById('yearInput').value = '';
+    document.getElementById('yearModal').querySelector('h3').textContent = 'Neue Klasse';
+    document.getElementById('yearModal').querySelector('p').textContent = `Klassenname für "${navYear}" eingeben`;
+    show('yearModal');
+    setTimeout(() => document.getElementById('yearInput').focus(), 100);
+    document.getElementById('confirmYearBtn').onclick = () => {
+      const name = document.getElementById('yearInput').value.trim();
+      if (!name) { showToast('Bitte einen Namen eingeben'); return; }
+      saveClass(navYear, name);
+      hide('yearModal');
+      renderLibrary(allLessons);
+      showToast(`Klasse "${name}" angelegt ✓`);
+      // Reset onclick
+      document.getElementById('confirmYearBtn').onclick = null;
+    };
+  });
+
+  // Neue Stunde – mit vorausgefülltem Schuljahr+Klasse
+  document.getElementById('newLessonBtn').addEventListener('click', () => {
+    startNewLesson();
+    // Schuljahr und Klasse vorausfüllen
+    setTimeout(() => {
+      if (navYear) document.getElementById('lessonYear').value = navYear;
+      if (navClass) document.getElementById('lessonClass').value = navClass;
+    }, 50);
+  });
+
+  // Breadcrumb Navigation
+  document.getElementById('bcHome').addEventListener('click', () => navToYears());
+  document.getElementById('bcYear').addEventListener('click', () => { if(navYear) navToClasses(navYear); });
+
   updateYearDropdowns();
+  updateBreadcrumb();
 }
 
 window.onload = () => {
@@ -720,7 +768,11 @@ async function dbDelete(id) {
 async function loadLibrary() {
   try {
     allLessons = await dbGetAll();
-    allLessons.forEach(l => { if (l.schuljahr) addYear(l.schuljahr); });
+    // Schuljahre und Klassen aus Cloud-Daten lokal merken
+    allLessons.forEach(l => {
+      if (l.schuljahr) { addYear(l.schuljahr); }
+      if (l.schuljahr && l.klasse) saveClass(l.schuljahr, l.klasse);
+    });
     renderLibrary(allLessons);
   } catch(e) {
     console.error('Bibliothek:', e);
@@ -730,98 +782,76 @@ async function loadLibrary() {
 
 function filterLibrary() {
   const q = document.getElementById('searchInput').value.toLowerCase();
-  const filtered = q
-    ? allLessons.filter(l =>
-        (l.topic||'').toLowerCase().includes(q) ||
-        (l.klasse||'').toLowerCase().includes(q) ||
-        (l.schuljahr||'').toLowerCase().includes(q))
-    : allLessons;
-  renderLibrary(filtered);
+  if (!q) { renderLibrary(allLessons); return; }
+  // Bei Suche: alle Stunden flach zeigen
+  navLevel = 'search';
+  const filtered = allLessons.filter(l =>
+    (l.topic||'').toLowerCase().includes(q) ||
+    (l.klasse||'').toLowerCase().includes(q) ||
+    (l.schuljahr||'').toLowerCase().includes(q));
+  const grid = document.getElementById('libGrid');
+  document.getElementById('libSectionTitle').textContent =
+    filtered.length ? `${filtered.length} Ergebnis${filtered.length!==1?'se':''}` : 'Keine Ergebnisse';
+  document.getElementById('breadcrumb').style.display = 'none';
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">🔍</span><div>Keine Stunden gefunden.</div></div>`;
+    return;
+  }
+  grid.innerHTML = `<div class="lessons-grid" style="grid-column:1/-1">${filtered.map(l => lessonCardHtml(l)).join('')}</div>`;
 }
 
 function renderLibrary(lessons) {
   const grid = document.getElementById('libGrid');
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const years = getYears();
 
-  document.getElementById('libSectionTitle').textContent =
-    lessons.length ? `${lessons.length} Stunde${lessons.length!==1?'n':''} gespeichert` : 'Gespeicherte Stunden';
-
-  // Flache Suche
-  if (q) {
-    if (!lessons.length) {
-      grid.innerHTML = `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">🔍</span><div>Keine Stunden gefunden.</div></div>`;
+  if (navLevel === 'years') {
+    // ── EBENE 1: Schuljahre als Ordner-Icons ──
+    const years = getYears();
+    document.getElementById('libSectionTitle').textContent = 'Schuljahr wählen';
+    if (!years.length) {
+      grid.innerHTML = `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">📁</span><div>Noch keine Schuljahre angelegt.<br>Klicke auf "＋ Schuljahr"!</div></div>`;
       return;
     }
-    grid.innerHTML = `<div class="lessons-grid" style="grid-column:1/-1">${lessons.map(l => lessonCardHtml(l)).join('')}</div>`;
-    return;
-  }
-
-  // Hierarchisch: Schuljahr → Klasse → Stunden
-  if (!years.length && !lessons.length) {
-    grid.innerHTML = `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">📚</span><div>Noch keine Stunden gespeichert.<br>Lege zuerst ein Schuljahr an!</div></div>`;
-    return;
-  }
-
-  let html = '';
-
-  years.forEach(year => {
-    const yearLessons = lessons.filter(l => (l.schuljahr||'') === year);
-    const isOpen = openYears.has(year);
-    const classes = [...new Set(yearLessons.map(l => l.klasse||'Ohne Klasse'))].sort();
-
-    html += `<div class="year-folder" style="grid-column:1/-1;">
-      <div class="year-header" onclick="toggleYear('${year}')">
-        <span class="folder-icon">${isOpen?'📂':'📁'}</span>
-        <span class="folder-name">${year}</span>
-        <span class="folder-count">${yearLessons.length} Stunde${yearLessons.length!==1?'n':''}</span>
-        <span class="folder-arrow">${isOpen?'▲':'▼'}</span>
+    grid.innerHTML = years.map(year => {
+      const count = lessons.filter(l => l.schuljahr === year).length;
+      return `<div class="folder-icon-card" onclick="navToClasses('${year}')">
+        <button class="folder-del" onclick="event.stopPropagation();deleteYear('${year}')">✕</button>
+        <span class="folder-emoji">📁</span>
+        <div class="folder-label">${year}</div>
+        <div class="folder-sublabel">${count} Stunde${count!==1?'n':''}</div>
       </div>`;
+    }).join('');
 
-    if (isOpen) {
-      html += `<div class="year-content">`;
-      if (!classes.length) {
-        html += `<div style="padding:16px;color:#aaa;font-size:0.88rem;">Noch keine Stunden in diesem Schuljahr.</div>`;
-      }
-      classes.forEach(cls => {
-        const clsKey = `${year}__${cls}`;
-        const clsLessons = yearLessons.filter(l => (l.klasse||'Ohne Klasse') === cls);
-        const isClsOpen = openClasses.has(clsKey);
-
-        html += `<div class="class-folder">
-          <div class="class-header" onclick="toggleClass('${clsKey}')">
-            <span class="folder-icon">${isClsOpen?'📂':'📁'}</span>
-            <span class="folder-name">${cls}</span>
-            <span class="folder-count">${clsLessons.length} Stunde${clsLessons.length!==1?'n':''}</span>
-            <span class="folder-arrow">${isClsOpen?'▲':'▼'}</span>
-          </div>`;
-
-        if (isClsOpen) {
-          html += `<div class="class-content"><div class="lessons-grid">${clsLessons.map(l => lessonCardHtml(l)).join('')}</div></div>`;
-        }
-        html += `</div>`;
-      });
-      html += `</div>`;
+  } else if (navLevel === 'classes') {
+    // ── EBENE 2: Klassen als Ordner-Icons ──
+    const classes = getClasses(navYear);
+    document.getElementById('libSectionTitle').textContent = `Klasse wählen – ${navYear}`;
+    if (!classes.length) {
+      grid.innerHTML = `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">📂</span><div>Noch keine Klassen angelegt.<br>Klicke auf "＋ Klasse"!</div></div>`;
+      return;
     }
-    html += `</div>`;
-  });
+    grid.innerHTML = classes.map(cls => {
+      const count = lessons.filter(l => l.schuljahr === navYear && l.klasse === cls).length;
+      return `<div class="folder-icon-card" onclick="navToLessons('${navYear}','${cls}')">
+        <button class="folder-del" onclick="event.stopPropagation();deleteClassFolder('${navYear}','${cls}')">✕</button>
+        <span class="folder-emoji">📂</span>
+        <div class="folder-label">${cls}</div>
+        <div class="folder-sublabel">${count} Stunde${count!==1?'n':''}</div>
+      </div>`;
+    }).join('');
 
-  // Stunden ohne Schuljahr
-  const noYear = lessons.filter(l => !l.schuljahr);
-  if (noYear.length) {
-    const isOpen = openYears.has('__noyear__');
-    html += `<div class="year-folder" style="grid-column:1/-1;">
-      <div class="year-header" onclick="toggleYear('__noyear__')">
-        <span class="folder-icon">${isOpen?'📂':'📁'}</span>
-        <span class="folder-name">Ohne Schuljahr</span>
-        <span class="folder-count">${noYear.length} Stunde${noYear.length!==1?'n':''}</span>
-        <span class="folder-arrow">${isOpen?'▲':'▼'}</span>
-      </div>
-      ${isOpen?`<div class="year-content"><div class="lessons-grid">${noYear.map(l=>lessonCardHtml(l)).join('')}</div></div>`:''}
-    </div>`;
+  } else if (navLevel === 'lessons') {
+    // ── EBENE 3: Stunden dieser Klasse ──
+    const filtered = lessons.filter(l => l.schuljahr === navYear && l.klasse === navClass);
+    document.getElementById('libSectionTitle').textContent =
+      filtered.length ? `${filtered.length} Stunde${filtered.length!==1?'n':''}` : 'Noch keine Stunden';
+    if (!filtered.length) {
+      grid.innerHTML = `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">📄</span><div>Noch keine Stunden in dieser Klasse.<br>Klicke auf "＋ Neue Stunde"!</div></div>`;
+      return;
+    }
+    // Sort by date descending
+    const sorted = [...filtered].sort((a,b) => (b.datum||'').localeCompare(a.datum||''));
+    grid.innerHTML = `<div class="lessons-grid" style="grid-column:1/-1">${sorted.map(l => lessonCardHtml(l)).join('')}</div>`;
   }
-
-  grid.innerHTML = html || `<div class="lib-empty" style="grid-column:1/-1"><span class="lib-empty-icon">📚</span><div>Noch keine Stunden gespeichert.</div></div>`;
 }
 
 function lessonCardHtml(l) {
@@ -835,6 +865,20 @@ function lessonCardHtml(l) {
     ${goals?`<div class="lesson-card-goals">${goals}</div>`:''}
     <div class="lesson-card-footer"><span class="lesson-card-badge">☁️ Cloud</span></div>
   </div>`;
+}
+
+function deleteYear(year) {
+  if (!confirm(`Schuljahr "${year}" wirklich löschen? (Stunden bleiben erhalten)`)) return;
+  const years = getYears().filter(y => y !== year);
+  saveYears(years);
+  updateYearDropdowns();
+  renderLibrary(allLessons);
+}
+
+function deleteClassFolder(year, cls) {
+  if (!confirm(`Klasse "${cls}" aus "${year}" wirklich löschen? (Stunden bleiben erhalten)`)) return;
+  deleteClass(year, cls);
+  renderLibrary(allLessons);
 }
 
 // ═══════════════════════════════════════════════════
@@ -1165,6 +1209,10 @@ async function saveToCloud() {
   const ts = Date.now();
   showLoading('Wird gespeichert ...');
 
+  // Klasse lokal speichern damit Ordner erscheint
+  if (meta.schuljahr && meta.klasse) saveClass(meta.schuljahr, meta.klasse);
+  if (meta.schuljahr) addYear(meta.schuljahr);
+
   // Nur beim ersten Speichern PDFs hochladen
   // Beim Update (currentSupabaseId vorhanden) nur Metadaten aktualisieren
   if (!currentSupabaseId) {
@@ -1334,6 +1382,16 @@ function goToLibrary() {
   const appEl = document.getElementById('appScreen');
   appEl.style.display='none'; appEl.classList.add('hidden');
   hide('sheetModal'); resetFields();
+  // Go back to lessons view if we were in a class
+  if (navYear && navClass) {
+    navLevel = 'lessons';
+  } else if (navYear) {
+    navLevel = 'classes';
+  } else {
+    navLevel = 'years';
+  }
+  updateBreadcrumb();
+  renderLibrary(allLessons);
   show('libraryScreen');
 }
 

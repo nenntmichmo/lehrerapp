@@ -40,6 +40,21 @@ body { font-family: var(--font-body); background: var(--paper); color: var(--ink
 .btn-new-lesson { background: var(--ink); color: white; border: none; border-radius: 10px; padding: 12px 24px; font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.18s, transform 0.12s; white-space: nowrap; }
 .btn-new-lesson:hover { background: var(--accent); transform: translateY(-1px); }
 
+/* ZULETZT VERWENDET */
+.recent-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #bbb; margin-bottom: 10px; }
+.recent-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.recent-chip {
+  display: flex; align-items: center; gap: 10px;
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 10px 16px; cursor: pointer;
+  transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+  box-shadow: var(--shadow);
+}
+.recent-chip:hover { border-color: var(--accent2); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.recent-chip span { font-size: 1.4rem; }
+.recent-cls { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
+.recent-year { font-size: 0.75rem; color: #aaa; margin-top: 1px; }
+
 /* BREADCRUMB */
 .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
 .bc-item { font-size: 0.9rem; color: #888; cursor: pointer; padding: 4px 10px; border-radius: 6px; transition: background 0.15s, color 0.15s; }
@@ -239,6 +254,9 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
       <span class="bc-sep" id="bcSep2" style="display:none;">›</span>
       <span class="bc-item bc-active" id="bcClass" style="display:none;"></span>
     </div>
+
+    <!-- ZULETZT VERWENDET -->
+    <div id="recentClasses" style="display:none; margin-bottom:28px;"></div>
 
     <!-- GRID -->
     <div class="lib-section-title" id="libSectionTitle"></div>
@@ -488,6 +506,7 @@ textarea.field { resize: vertical; min-height: 90px; line-height: 1.6; }
 <!-- Firebase SDKs (compat mode) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
 // ═══════════════════════════════════════════════════
 // CONFIG
@@ -502,15 +521,8 @@ const FIREBASE_CONFIG = {
   appId: "1:694677505627:web:6737ea2b28ca579f25e17e"
 };
 
-const SUPABASE_URL = 'https://btrhkgnynlzgdobpsetd.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0cmhrZ255bmx6Z2RvYnBzZXRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MTg2NDAsImV4cCI6MjA5MDI5NDY0MH0.ixUCXBgH17cusMQEU0IbCPgkHCHUrT67VUlPyd_-UtA';
-const DB_URL = `${SUPABASE_URL}/rest/v1/stunden`;
-const DB_HEADERS = {
-  'apikey': SUPABASE_KEY,
-  'Authorization': `Bearer ${SUPABASE_KEY}`,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=representation'
-};
+// Firestore wird über Firebase SDK initialisiert (siehe initFirebase)
+let db = null;
 
 // ═══════════════════════════════════════════════════
 // STATE
@@ -523,7 +535,7 @@ let sheetDocs = [];
 let tool = 'pen', drawColor = '#c0392b', drawSize = 2;
 let isDrawing = false, lastX = 0, lastY = 0;
 let isPanning = false, panStartX = 0, panStartY = 0;
-let currentSupabaseId = null;
+let currentLessonId = null;
 let pendingDeleteId = null;
 let allLessons = [];
 let openYears = new Set();
@@ -588,6 +600,44 @@ function updateYearDropdowns() {
   });
 }
 
+// ─── Zuletzt verwendete Klassen ──────────────────
+const RECENT_KEY = 'ut_recent_classes';
+
+function getRecentClasses() {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { return []; }
+}
+
+function addRecentClass(year, cls) {
+  let recent = getRecentClasses();
+  // Remove if already exists
+  recent = recent.filter(r => !(r.year === year && r.cls === cls));
+  // Add to front
+  recent.unshift({ year, cls });
+  // Keep only 5
+  recent = recent.slice(0, 5);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(recent));
+}
+
+function renderRecentClasses() {
+  const recent = getRecentClasses();
+  const container = document.getElementById('recentClasses');
+  if (!container) return;
+  if (!recent.length) { container.style.display = 'none'; return; }
+  container.style.display = 'block';
+  container.innerHTML = `
+    <div class="recent-title">Zuletzt verwendet</div>
+    <div class="recent-row">
+      ${recent.map(r => `
+        <div class="recent-chip" onclick="navToLessons('${r.year}','${r.cls}')">
+          <span>📂</span>
+          <div>
+            <div class="recent-cls">${r.cls}</div>
+            <div class="recent-year">${r.year}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
 // ─── Navigation ──────────────────────────────────
 function navToYears() {
   navLevel = 'years'; navYear = null; navClass = null;
@@ -601,6 +651,7 @@ function navToClasses(year) {
 }
 function navToLessons(year, cls) {
   navLevel = 'lessons'; navYear = year; navClass = cls;
+  addRecentClass(year, cls);
   updateBreadcrumb();
   renderLibrary(allLessons);
 }
@@ -764,6 +815,7 @@ function initFirebase() {
   if (firebaseApp) return; // already initialized
   firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
   firebaseStorage = firebase.storage();
+  db = firebase.firestore();
 }
 
 // Zuverlässige Konvertierung Uint8Array → Blob
@@ -804,42 +856,45 @@ async function fetchPdfFromFirebase(pathOrUrl) {
 }
 
 // ═══════════════════════════════════════════════════
-// SUPABASE DB
 // ═══════════════════════════════════════════════════
+// FIRESTORE DB
+// ═══════════════════════════════════════════════════
+function getDb() {
+  if (!db) {
+    initFirebase();
+    db = firebase.firestore();
+  }
+  return db;
+}
+
 async function dbInsert(data) {
-  const res = await fetch(DB_URL, { method: 'POST', headers: DB_HEADERS, body: JSON.stringify(data) });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json())[0];
+  const docRef = await getDb().collection('stunden').add({
+    ...data,
+    erstellt_am: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  return { id: docRef.id, ...data };
 }
 
 async function dbUpdate(id, data) {
-  const res = await fetch(`${DB_URL}?id=eq.${id}`, { method: 'PATCH', headers: DB_HEADERS, body: JSON.stringify(data) });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json())[0];
+  await getDb().collection('stunden').doc(id).update(data);
+  return { id, ...data };
 }
 
 async function dbGetAll() {
-  const res = await fetch(`${DB_URL}?select=id,topic,datum,klasse,schuljahr,ziele,planung,notizen,muster_url,sheet_urls,erstellt_am&order=erstellt_am.desc`, {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const snap = await getDb().collection('stunden')
+    .orderBy('erstellt_am', 'desc')
+    .get();
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 async function dbGetOne(id) {
-  const res = await fetch(`${DB_URL}?id=eq.${id}&select=*`, {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json())[0];
+  const doc = await getDb().collection('stunden').doc(id).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() };
 }
 
 async function dbDelete(id) {
-  const res = await fetch(`${DB_URL}?id=eq.${id}`, {
-    method: 'DELETE',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-  });
-  if (!res.ok) throw new Error(await res.text());
+  await getDb().collection('stunden').doc(id).delete();
 }
 
 // ═══════════════════════════════════════════════════
@@ -885,6 +940,7 @@ function renderLibrary(lessons) {
 
   if (navLevel === 'years') {
     // ── EBENE 1: Schuljahre als Ordner-Icons ──
+    renderRecentClasses();
     const years = getYears();
     document.getElementById('libSectionTitle').textContent = 'Schuljahr wählen';
     if (!years.length) {
@@ -903,6 +959,8 @@ function renderLibrary(lessons) {
 
   } else if (navLevel === 'classes') {
     // ── EBENE 2: Klassen als Ordner-Icons ──
+    const rc = document.getElementById('recentClasses');
+    if (rc) rc.style.display = 'none';
     const classes = getClasses(navYear);
     document.getElementById('libSectionTitle').textContent = `Klasse wählen – ${navYear}`;
     if (!classes.length) {
@@ -1003,7 +1061,7 @@ async function loadLesson(id) {
     }
     if (sheetsData.length) renderSheetChips();
 
-    currentSupabaseId = id;
+    currentLessonId = id;
     hideLoading();
 
     if (musterData) {
@@ -1043,7 +1101,7 @@ async function confirmDelete() {
 // ═══════════════════════════════════════════════════
 // WIZARD
 // ═══════════════════════════════════════════════════
-function startNewLesson() { currentSupabaseId = null; resetFields(); hide('libraryScreen'); show('dashScreen'); }
+function startNewLesson() { currentLessonId = null; resetFields(); hide('libraryScreen'); show('dashScreen'); }
 
 function goToStep2() {
   if (!document.getElementById('lessonTopic').value.trim()) { showToast('Bitte ein Thema eingeben'); return; }
@@ -1269,7 +1327,7 @@ function collectMeta() {
 
 // ═══════════════════════════════════════════════════
 // IN CLOUD SPEICHERN
-// PDFs → Firebase Storage, Metadaten → Supabase
+// PDFs → Firebase Storage, Metadaten → Firestore
 // ═══════════════════════════════════════════════════
 async function saveToCloud() {
   const meta = collectMeta();
@@ -1281,8 +1339,8 @@ async function saveToCloud() {
   if (meta.schuljahr) addYear(meta.schuljahr);
 
   // Nur beim ersten Speichern PDFs hochladen
-  // Beim Update (currentSupabaseId vorhanden) nur Metadaten aktualisieren
-  if (!currentSupabaseId) {
+  // Beim Update (currentLessonId vorhanden) nur Metadaten aktualisieren
+  if (!currentLessonId) {
     // Neue Stunde – PDFs hochladen
     showLoading('Musterlösung wird hochgeladen ...');
     const musterUpload = musterFile instanceof File
@@ -1300,21 +1358,21 @@ async function saveToCloud() {
       sheetUrls.push({ name: sheetsData[i].name, url: sheetPath });
     }
 
-    showLoading('Wird gespeichert ...');
+    showLoading('Wird in Firestore gespeichert ...');
     const payload = { ...meta, muster_url: musterPath, sheet_urls: sheetUrls };
     const result = await dbInsert(payload);
-    currentSupabaseId = result.id;
+    currentLessonId = result.id;
 
   } else {
-    // Bestehende Stunde – nur Metadaten (Notizen, Planung etc.) aktualisieren
-    // PDFs bleiben unverändert in Firebase
-    const existing = await dbGetOne(currentSupabaseId);
+    // Bestehende Stunde – nur Metadaten aktualisieren
+    showLoading('Wird aktualisiert ...');
+    const existing = await dbGetOne(currentLessonId);
     const payload = {
       ...meta,
       muster_url: existing.muster_url,
-      sheet_urls: existing.sheet_urls
+      sheet_urls: existing.sheet_urls || []
     };
-    await dbUpdate(currentSupabaseId, payload);
+    await dbUpdate(currentLessonId, payload);
   }
 }
 
@@ -1484,7 +1542,7 @@ function resetFields() {
   document.getElementById('musterInput').value='';
   document.getElementById('sheetsInput').value='';
   sheetsScroll.innerHTML='<span class="no-sheets">Keine Arbeitsblätter hochgeladen</span>';
-  currentSupabaseId=null;
+  currentLessonId = null;
 }
 
 // ═══════════════════════════════════════════════════
